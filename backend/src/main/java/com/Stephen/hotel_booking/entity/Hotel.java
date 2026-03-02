@@ -18,9 +18,12 @@ public class Hotel {
 
     private String address; 
 
-    private Double price; 
+    private String price;
 
-    private String description; 
+    private String description;
+
+    private String capacity;
+    private Integer maxCapacity;
 
     @Column(name = "star_rating")
     private Integer starRating; 
