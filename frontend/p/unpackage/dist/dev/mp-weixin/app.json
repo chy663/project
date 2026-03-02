@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/order/order",
+    "pages/mine/mine",
+    "pages/detail/detail"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "酒店预订",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#42b983",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "Home",
+        "iconPath": "static/首页1.png",
+        "selectedIconPath": "static/首页.png"
+      },
+      {
+        "pagePath": "pages/order/order",
+        "text": "Order",
+        "iconPath": "static/订单1.png",
+        "selectedIconPath": "static/订单.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "Me",
+        "iconPath": "static/我的1.png",
+        "selectedIconPath": "static/我的.png"
+      }
+    ]
+  },
+  "usingComponents": {}
+}
