@@ -30,6 +30,12 @@ public class Room {
     @Column(name = "total_inventory")
     private Integer totalInventory; // 使用 Integer 避免默认 0 的干扰
 
+    // Order.java 核心改动
+    @Column(name = "hotel_name")
+    private String hotelName;
+
+
+
     // 如果需要直接关联 Hotel 对象，可以添加以下配置（可选）
     /*
     @ManyToOne
