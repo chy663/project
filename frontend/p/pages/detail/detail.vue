@@ -1,58 +1,40 @@
 <template>
 	<view class="container">
-		<view class="header-banner">
-			<image :src="hotelImage" mode="aspectFill" class="banner-img"></image>
-			<view class="banner-mask">
-				<text class="banner-tag"></text>
+		<view class="hotel-header">
+			<image class="hotel-image" :src="hotelImage" mode="aspectFill"></image>
+			<view class="hotel-info">
+				<text class="hotel-name">{{ hotelName }}</text>
 			</view>
 		</view>
 
-		<view class="room-section">
-			<view class="list-title">Select Your Room</view>
-			
-			<view v-for="room in roomList" :key="room.id" class="room-card">
-				<image 
-					class="room-cover" 
-					:src="getRoomImage(room.roomType)" 
-					mode="aspectFill"
-				></image>
-				
+		<view class="room-list">
+			<view v-for="(room, index) in roomList" :key="index" class="room-item">
 				<view class="room-details">
-					<view class="details-top">
-						<text class="room-name">{{ room.roomType }}</text>
-						
-						<view class="info-tags">
-							<text class="capacity-info">Up to {{ room.maxPeople || 2 }} Guests</text>
-							<text class="inventory-info" :class="{'low-stock': (room.totalInventory || 10) < 3}">
-								{{ room.totalInventory || 0 }} Rooms Left
-							</text>
+					<view class="room-title-row">
+						<view class="name-container">
+							<text class="room-type">{{ room.roomType }}</text>
 						</view>
-
-						<view class="feature-tags">
-							<text class="f-tag">Free WiFi</text>
-							<text class="f-tag">Window</text>
+						<view class="stock-container">
+							<text class="room-inventory" :class="room.totalInventory > 0 ? 'stock-green' : 'stock-red'">
+								Stock: {{ room.totalInventory || 0 }}
+							</text>
 						</view>
 					</view>
 					
-					<view class="details-bottom">
-						<view class="price-box">
-							<text class="currency">$</text>
-							<text class="amount">{{ room.price }}</text>
-						</view>
-						<button 
-							class="book-button" 
-							:class="{ 'sold-out': !room.isAvailable || (room.totalInventory || 0) <= 0 }"
-							@tap="handleBook(room)"
-						>
-							{{ (room.isAvailable && (room.totalInventory || 0) > 0) ? 'Book' : 'Full' }}
-						</button>
-					</view>
+					<text class="room-price">${{ room.price }} / Night</text>
+					
+					<text class="room-max">Max People: {{ room.maxPeople }}</text>
 				</view>
+				
+				<button 
+					class="book-button" 
+					:class="{'disabled-btn': room.totalInventory <= 0}"
+					:disabled="room.totalInventory <= 0"
+					@click="handleBook(room)"
+				>
+					{{ room.totalInventory > 0 ? 'Book' : 'Full' }}
+				</button>
 			</view>
-		</view>
-
-		<view v-if="roomList.length === 0" class="empty-state">
-			<text>Loading rooms...</text>
 		</view>
 	</view>
 </template>
@@ -62,54 +44,58 @@ export default {
 	data() {
 		return {
 			hotelId: null,
-			roomList: [],
-			hotelImage: '/static/1.jpg' 
+			hotelName: 'Hotel Details',
+			hotelImage: '/static/1.jpg',
+			roomList: []
 		}
 	},
 	onLoad(options) {
-		if (options.id) {
-			this.hotelId = options.id;
-			this.hotelImage = `/static/${options.id}.jpg`;
-			this.fetchRoomData();
-		}
+		this.hotelId = options.id;
+		this.hotelImage = `/static/${options.id}.jpg`;
+		this.fetchRoomData();
 	},
 	methods: {
-		getRoomImage(type) {
-			if (!type) return '/static/logo.png';
-			const name = type.toLowerCase();
-			if (name.includes('business')) return '/static/1-1.jpg';
-			if (name.includes('work')) return '/static/1-2.jpg';
-			if (name.includes('queen')) return '/static/2-1.jpg';
-			if (name.includes('romantic')) return '/static/2-2.jpg';
-			if (name.includes('studio')) return '/static/2-3.jpg';
-			if (name.includes('garden')) return '/static/3-1.jpg';
-			if (name.includes('twin')) return '/static/3-2.jpg';
-			if (name.includes('long')) return '/static/4-1.jpg';
-			if (name.includes('space')) return '/static/4-2.jpg';
-			if (name.includes('budget')) return '/static/5-1.jpg';
-			if (name.includes('bunk')) return '/static/5-2.jpg';
-			if (name.includes('student')) return '/static/5-3.jpg';
-			return '/static/logo.png';
-		},
 		fetchRoomData() {
 			uni.request({
 				url: `http://localhost:8089/api/hotels/${this.hotelId}/rooms`,
 				method: 'GET',
 				success: (res) => {
-					// 确保后端返回了 maxPeople 和 totalInventory 字段 [cite: 52, 54]
 					this.roomList = res.data;
 				}
 			});
 		},
 		handleBook(room) {
-			// 修改点 3：增加库存判断逻辑 
-			if (!room.isAvailable || (room.totalInventory || 0) <= 0) return;
+			if (!room.totalInventory || room.totalInventory <= 0) return;
+
 			uni.showModal({
 				title: 'Confirm Booking',
-				content: `Book ${room.roomType} for up to ${room.maxPeople} guests?`,
+				content: `Total: $${room.price}. Confirm payment for ${room.roomType}?`,
+				confirmText: 'Pay',
+				cancelText: 'Cancel',
 				success: (res) => {
 					if (res.confirm) {
-						uni.showToast({ title: 'Success', icon: 'success' });
+						uni.showLoading({ title: 'Processing...' });
+						uni.request({
+							url: 'http://localhost:8089/api/orders/book',
+							method: 'POST',
+							data: {
+								userId: 1,
+								roomId: room.id,
+								status: 'PAID'
+							},
+							success: (orderRes) => {
+								uni.hideLoading();
+								if (orderRes.statusCode === 200) {
+									uni.showToast({ title: 'Success', icon: 'success' });
+									this.fetchRoomData();
+									setTimeout(() => {
+										uni.switchTab({ url: '/pages/order/order' });
+									}, 1500);
+								} else {
+									uni.showToast({ title: 'Failed', icon: 'none' });
+								}
+							}
+						});
 					}
 				}
 			});
@@ -119,74 +105,99 @@ export default {
 </script>
 
 <style>
-/* 保持原有布局，新增详情信息样式 */
-.container { background-color: #f8f9fb; min-height: 100vh; }
-.header-banner { width: 100%; height: 380rpx; position: relative; }
-.banner-img { width: 100%; height: 100%; }
-.room-section { padding: 30rpx; }
-.list-title { font-size: 34rpx; font-weight: bold; color: #333; margin-bottom: 30rpx; }
+.container { padding: 20rpx; background-color: #f5f5f5; min-height: 100vh; }
+.hotel-header { background: #fff; border-radius: 15rpx; overflow: hidden; margin-bottom: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
+.hotel-image { width: 100%; height: 400rpx; }
+.hotel-info { padding: 20rpx; }
+.hotel-name { font-size: 36rpx; font-weight: bold; color: #333; }
 
-.room-card { 
+.room-list { background: #fff; border-radius: 15rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
+.room-item { 
 	display: flex; 
-	background: #fff; 
-	border-radius: 20rpx; 
-	padding: 20rpx; 
-	margin-bottom: 24rpx; 
-	box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
-}
-
-.room-cover { 
-	width: 220rpx; 
-	height: 180rpx; 
-	border-radius: 12rpx; 
-	flex-shrink: 0; 
+	flex-direction: row; 
+	justify-content: space-between; 
+	align-items: center; 
+	padding: 30rpx; 
+	border-bottom: 1rpx solid #f0f0f0; 
 }
 
 .room-details { 
 	flex: 1; 
-	margin-left: 24rpx; 
 	display: flex; 
 	flex-direction: column; 
-	justify-content: space-between; 
+	align-items: flex-start;
 }
 
-/* 新增：人数和库存标签布局 */
-.info-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12rpx;
-	margin-top: 8rpx;
-}
-.capacity-info {
-	font-size: 22rpx;
-	color: #666;
-	background: #f0f2f5;
-	padding: 4rpx 12rpx;
-	border-radius: 4rpx;
-}
-.inventory-info {
-	font-size: 22rpx;
-	color: #42b983;
-	font-weight: bold;
-}
-.low-stock {
-	color: #ff4d4f; /* 库存紧张显示红色  */
+.room-title-row { 
+	display: flex; 
+	flex-direction: row; 
+	align-items: center; 
+	margin-bottom: 12rpx;
+	width: 100%;
 }
 
-.room-name { font-size: 30rpx; font-weight: bold; color: #333; }
-.feature-tags { display: flex; gap: 10rpx; margin-top: 12rpx; }
-.f-tag { font-size: 18rpx; color: #999; border: 1rpx solid #eee; padding: 2rpx 8rpx; border-radius: 4rpx; }
+.name-container {
+	flex: 0 0 240rpx; 
+	margin-right: 20rpx;
+}
+.room-type { 
+	font-size: 32rpx; 
+	font-weight: bold; 
+	color: #333; 
+}
 
-.details-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
-.price-box { color: #ff4d4f; }
-.currency { font-size: 24rpx; font-weight: bold; }
-.amount { font-size: 40rpx; font-weight: bold; margin-left: 4rpx; }
+.stock-container {
+	flex: 1; 
+}
+.room-inventory { 
+	font-size: 22rpx; 
+	padding: 4rpx 12rpx; 
+	border-radius: 6rpx; 
+	white-space: nowrap; 
+}
 
+/* Green Stock Style (>0) */
+.stock-green { 
+	color: #28a745; 
+	background: #eafaf1; 
+}
+
+/* Red Stock Style (==0) */
+.stock-red { 
+	color: #ff4d4f; 
+	background: #fff1f0; 
+}
+
+.room-price { 
+	font-size: 30rpx; 
+	color: #ff5a5f; 
+	font-weight: bold; 
+	margin-bottom: 8rpx; 
+}
+.room-max { 
+	font-size: 24rpx; 
+	color: #999; 
+}
+
+/* Updated Button Color to Green */
 .book-button { 
-	background: #42b983; color: #fff; font-size: 24rpx; 
-	width: 130rpx; height: 56rpx; line-height: 56rpx; 
-	padding: 0; margin: 0; border-radius: 28rpx;
+	background-color: #28a745; /* Green */
+	color: white; 
+	font-size: 26rpx; 
+	width: 150rpx; 
+	height: 70rpx; 
+	line-height: 70rpx; 
+	border-radius: 35rpx; 
+	margin-left: 20rpx;
+	flex-shrink: 0;
+	padding: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
-.sold-out { background: #ccc !important; }
-.empty-state { text-align: center; color: #999; font-size: 26rpx; margin-top: 100rpx; }
+
+/* Disabled/Full button remains grey */
+.disabled-btn { 
+	background-color: #ccc !important; 
+}
 </style>

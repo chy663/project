@@ -1,79 +1,96 @@
 
-/* 保持原有布局，新增详情信息样式 */
-.container { background-color: #f8f9fb; min-height: 100vh;
+.container { padding: 20rpx; background-color: #f5f5f5; min-height: 100vh;
 }
-.header-banner { width: 100%; height: 380rpx; position: relative;
+.hotel-header { background: #fff; border-radius: 15rpx; overflow: hidden; margin-bottom: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
 }
-.banner-img { width: 100%; height: 100%;
+.hotel-image { width: 100%; height: 400rpx;
 }
-.room-section { padding: 30rpx;
+.hotel-info { padding: 20rpx;
 }
-.list-title { font-size: 34rpx; font-weight: bold; color: #333; margin-bottom: 30rpx;
+.hotel-name { font-size: 36rpx; font-weight: bold; color: #333;
 }
-.room-card { 
+.room-list { background: #fff; border-radius: 15rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+}
+.room-item { 
 	display: flex; 
-	background: #fff; 
-	border-radius: 20rpx; 
-	padding: 20rpx; 
-	margin-bottom: 24rpx; 
-	box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
-}
-.room-cover { 
-	width: 220rpx; 
-	height: 180rpx; 
-	border-radius: 12rpx; 
-	flex-shrink: 0;
+	flex-direction: row; 
+	justify-content: space-between; 
+	align-items: center; 
+	padding: 30rpx; 
+	border-bottom: 1rpx solid #f0f0f0;
 }
 .room-details { 
 	flex: 1; 
-	margin-left: 24rpx; 
 	display: flex; 
 	flex-direction: column; 
-	justify-content: space-between;
+	align-items: flex-start;
+}
+.room-title-row { 
+	display: flex; 
+	flex-direction: row; 
+	align-items: center; 
+	margin-bottom: 12rpx;
+	width: 100%;
+}
+.name-container {
+	flex: 0 0 240rpx; 
+	margin-right: 20rpx;
+}
+.room-type { 
+	font-size: 32rpx; 
+	font-weight: bold; 
+	color: #333;
+}
+.stock-container {
+	flex: 1;
+}
+.room-inventory { 
+	font-size: 22rpx; 
+	padding: 4rpx 12rpx; 
+	border-radius: 6rpx; 
+	white-space: nowrap;
 }
 
-/* 新增：人数和库存标签布局 */
-.info-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12rpx;
-	margin-top: 8rpx;
+/* Green Stock Style (>0) */
+.stock-green { 
+	color: #28a745; 
+	background: #eafaf1;
 }
-.capacity-info {
-	font-size: 22rpx;
-	color: #666;
-	background: #f0f2f5;
-	padding: 4rpx 12rpx;
-	border-radius: 4rpx;
+
+/* Red Stock Style (==0) */
+.stock-red { 
+	color: #ff4d4f; 
+	background: #fff1f0;
 }
-.inventory-info {
-	font-size: 22rpx;
-	color: #42b983;
-	font-weight: bold;
+.room-price { 
+	font-size: 30rpx; 
+	color: #ff5a5f; 
+	font-weight: bold; 
+	margin-bottom: 8rpx;
 }
-.low-stock {
-	color: #ff4d4f; /* 库存紧张显示红色  */
+.room-max { 
+	font-size: 24rpx; 
+	color: #999;
 }
-.room-name { font-size: 30rpx; font-weight: bold; color: #333;
-}
-.feature-tags { display: flex; gap: 10rpx; margin-top: 12rpx;
-}
-.f-tag { font-size: 18rpx; color: #999; border: 1rpx solid #eee; padding: 2rpx 8rpx; border-radius: 4rpx;
-}
-.details-bottom { display: flex; justify-content: space-between; align-items: flex-end;
-}
-.price-box { color: #ff4d4f;
-}
-.currency { font-size: 24rpx; font-weight: bold;
-}
-.amount { font-size: 40rpx; font-weight: bold; margin-left: 4rpx;
-}
+
+/* Updated Button Color to Green */
 .book-button { 
-	background: #42b983; color: #fff; font-size: 24rpx; 
-	width: 130rpx; height: 56rpx; line-height: 56rpx; 
-	padding: 0; margin: 0; border-radius: 28rpx;
+	background-color: #28a745; /* Green */
+	color: white; 
+	font-size: 26rpx; 
+	width: 150rpx; 
+	height: 70rpx; 
+	line-height: 70rpx; 
+	border-radius: 35rpx; 
+	margin-left: 20rpx;
+	flex-shrink: 0;
+	padding: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
-.sold-out { background: #ccc !important;
-}
-.empty-state { text-align: center; color: #999; font-size: 26rpx; margin-top: 100rpx;
+
+/* Disabled/Full button remains grey */
+.disabled-btn { 
+	background-color: #ccc !important;
 }
