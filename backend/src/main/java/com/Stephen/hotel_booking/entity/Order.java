@@ -39,6 +39,13 @@ public class Order {
     @Column(name = "room_type")
     private String roomType;
 
+    @Column(name = "guest_name")
+    private String guestName;
+
+    // 新增：入住人电话
+    @Column(name = "guest_phone")
+    private String guestPhone;
+
     @PrePersist
     protected void onCreate() {
         createTime = LocalDateTime.now();

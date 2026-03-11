@@ -1,66 +1,34 @@
-// pages/mine/mine.js
-Page({
-
-  /**
-   * 页面的初始数据
-   */
-  data: {
-
+"use strict";
+const common_vendor = require("../../common/vendor.js");
+const common_assets = require("../../common/assets.js");
+const _sfc_main = {
+  data() {
+    return {
+      // 这里不再需要头像相关的变量
+    };
   },
-
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  methods: {
+    handleLogout() {
+      common_vendor.index.showModal({
+        title: "Sign Out",
+        content: "Are you sure you want to log out?",
+        confirmColor: "#42b983",
+        // 沿用首页的绿色
+        success: (res) => {
+          if (res.confirm) {
+            common_vendor.index.showToast({ title: "Logged out", icon: "none" });
+          }
+        }
+      });
+    }
   }
-})
+};
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  return {
+    a: common_assets._imports_0$1,
+    b: common_vendor.o((...args) => $options.handleLogout && $options.handleLogout(...args))
+  };
+}
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
+wx.createPage(MiniProgramPage);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/mine/mine.js.map

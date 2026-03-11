@@ -1,2 +1,1 @@
-<!--pages/mine/mine.wxml-->
-<text>pages/mine/mine.wxml</text>
+<view class="container"><view class="user-card"><image class="avatar" src="{{a}}" mode="aspectFill"></image><view class="user-info"><text class="username">Guest_001</text><text class="vip-tag">Gold Member</text></view></view><view class="menu-list"><view class="menu-item"><text class="menu-text">My Favorites</text><text class="arrow">&gt;</text></view><view class="menu-item"><text class="menu-text">Common Guests</text><text class="arrow">&gt;</text></view><view class="menu-item"><text class="menu-text">Coupons</text><text class="arrow">&gt;</text></view></view><view class="menu-list"><view class="menu-item logout" bindtap="{{b}}"><text class="menu-text">Sign Out</text></view></view></view>

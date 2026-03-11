@@ -1,0 +1,50 @@
+
+/* 样式调整：确保布局清爽且不可交互感明显 */
+.container { padding-top: 0; background-color: #f8f8f8; min-height: 100vh;
+}
+.user-card { 
+	display: flex; 
+	align-items: center; 
+	background: #42b983; /* 沿用首页主题色 */
+	padding: 100rpx 40rpx 60rpx; 
+	border-radius: 0 0 40rpx 40rpx; 
+	margin-bottom: 30rpx;
+}
+.avatar { 
+	width: 120rpx; 
+	height: 120rpx; 
+	border-radius: 60rpx; 
+	border: 4rpx solid #fff; 
+	background: #fff; 
+	flex-shrink: 0;
+}
+.user-info { margin-left: 30rpx; color: #fff;
+}
+.username { font-size: 36rpx; font-weight: bold; display: block;
+}
+.vip-tag { 
+	font-size: 22rpx; 
+	background: rgba(255,255,255,0.2); 
+	padding: 4rpx 12rpx; 
+	border-radius: 20rpx; 
+	margin-top: 10rpx; 
+	display: inline-block;
+}
+.menu-list { background: #fff; border-radius: 16rpx; margin: 0 20rpx 20rpx; overflow: hidden;
+}
+.menu-item { 
+	display: flex; 
+	align-items: center; 
+	padding: 35rpx 30rpx; 
+	border-bottom: 1rpx solid #f8f8f8;
+}
+.menu-item:last-child { border-bottom: none;
+}
+.menu-text { flex: 1; font-size: 30rpx; color: #333;
+}
+.arrow { color: #ccc; font-size: 24rpx;
+}
+.logout { justify-content: center;
+}
+.logout .menu-text { color: #ff4d4f; flex: none; font-weight: bold;
+}

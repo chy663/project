@@ -1,94 +1,101 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const common_assets = require("../../common/assets.js");
 const _sfc_main = {
   data() {
     return {
+      userId: 1,
+      orderList: [],
       currentTab: "PAID",
-      allOrders: []
+      tabs: [
+        { name: "Paid", value: "PAID" },
+        { name: "Completed", value: "COMPLETED" },
+        { name: "Cancelled", value: "CANCELLED" }
+      ],
+      isReviewModalShow: false,
+      reviewContent: "",
+      selectedOrder: null
     };
   },
   computed: {
-    filteredOrders() {
-      return this.allOrders.filter((order) => order.status === this.currentTab);
+    filteredOrderList() {
+      return this.orderList.filter((order) => order.status === this.currentTab);
     }
   },
   onShow() {
     this.fetchOrders();
   },
   methods: {
-    switchTab(tab) {
-      this.currentTab = tab;
-    },
     fetchOrders() {
       common_vendor.index.request({
-        url: "http://localhost:8089/api/orders/user/1",
+        url: `http://localhost:8089/api/orders/user/${this.userId}`,
         method: "GET",
         success: (res) => {
-          this.allOrders = res.data;
+          this.orderList = res.data.reverse();
         }
       });
     },
-    // 新增：时间格式化函数，将后端返回的 ISO 字符串转为 YYYY-MM-DD HH:mm 格式
-    formatDate(dateString) {
-      if (!dateString)
-        return "N/A";
-      const date = new Date(dateString);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      return `${year}-${month}-${day} ${hours}:${minutes}`;
+    switchTab(value) {
+      this.currentTab = value;
     },
-    handleComplete(orderId) {
-      common_vendor.index.showModal({
-        title: "Complete Order",
-        content: "Mark this order as completed?",
-        confirmText: "Yes",
-        cancelText: "No",
-        success: (res) => {
-          if (res.confirm) {
-            common_vendor.index.showLoading({ title: "Processing..." });
-            common_vendor.index.request({
-              url: `http://localhost:8089/api/orders/${orderId}/complete`,
-              method: "POST",
-              success: (completeRes) => {
-                common_vendor.index.hideLoading();
-                if (completeRes.statusCode === 200) {
-                  common_vendor.index.showToast({ title: "Completed", icon: "success" });
-                  this.fetchOrders();
-                } else {
-                  common_vendor.index.showToast({ title: "Error", icon: "none" });
-                }
-              }
-            });
-          }
-        }
-      });
+    getStatusClass(status) {
+      if (status === "PAID")
+        return "tag-paid";
+      if (status === "COMPLETED")
+        return "tag-completed";
+      return "tag-cancelled";
+    },
+    formatTime(order) {
+      return order.createTime ? order.createTime.replace("T", " ").substring(0, 16) : "2026-03-11 14:00";
     },
     handleCancel(orderId) {
       common_vendor.index.showModal({
-        title: "Cancel Booking",
-        content: "Are you sure you want to cancel this booking?",
-        confirmText: "Yes",
-        cancelText: "No",
+        title: "Cancel Order",
+        content: "Are you sure?",
         success: (res) => {
           if (res.confirm) {
-            common_vendor.index.showLoading({ title: "Cancelling..." });
             common_vendor.index.request({
               url: `http://localhost:8089/api/orders/${orderId}/cancel`,
               method: "POST",
-              success: (cancelRes) => {
-                common_vendor.index.hideLoading();
-                if (cancelRes.statusCode === 200) {
-                  common_vendor.index.showToast({ title: "Cancelled", icon: "success" });
-                  this.fetchOrders();
-                } else {
-                  common_vendor.index.showToast({ title: "Error", icon: "none" });
-                }
+              success: () => {
+                this.fetchOrders();
               }
             });
           }
+        }
+      });
+    },
+    handleComplete(orderId) {
+      common_vendor.index.request({
+        url: `http://localhost:8089/api/orders/${orderId}/complete`,
+        method: "POST",
+        success: () => {
+          common_vendor.index.showToast({ title: "Checked In" });
+          this.fetchOrders();
+        }
+      });
+    },
+    openReviewModal(order) {
+      this.selectedOrder = order;
+      this.reviewContent = "";
+      this.isReviewModalShow = true;
+    },
+    submitReview() {
+      if (!this.reviewContent.trim()) {
+        common_vendor.index.showToast({ title: "Please enter review", icon: "none" });
+        return;
+      }
+      common_vendor.index.request({
+        url: "http://localhost:8089/api/reviews/add",
+        method: "POST",
+        data: {
+          userId: this.userId,
+          roomId: this.selectedOrder.roomId,
+          content: this.reviewContent
+        },
+        success: () => {
+          common_vendor.index.showToast({ title: "Success" });
+          this.isReviewModalShow = false;
         }
       });
     }
@@ -96,33 +103,55 @@ const _sfc_main = {
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: $data.currentTab === "PAID" ? 1 : "",
-    b: common_vendor.o(($event) => $options.switchTab("PAID")),
-    c: $data.currentTab === "COMPLETED" ? 1 : "",
-    d: common_vendor.o(($event) => $options.switchTab("COMPLETED")),
-    e: $options.filteredOrders.length > 0
-  }, $options.filteredOrders.length > 0 ? {
-    f: common_vendor.f($options.filteredOrders, (order, k0, i0) => {
+    a: common_vendor.f($data.tabs, (tab, index, i0) => {
       return common_vendor.e({
-        a: common_vendor.t(order.id),
+        a: common_vendor.t(tab.name),
+        b: $data.currentTab === tab.value
+      }, $data.currentTab === tab.value ? {} : {}, {
+        c: index,
+        d: $data.currentTab === tab.value ? 1 : "",
+        e: common_vendor.o(($event) => $options.switchTab(tab.value), index)
+      });
+    }),
+    b: common_vendor.n("active-" + $data.currentTab.toLowerCase()),
+    c: $options.filteredOrderList.length > 0
+  }, $options.filteredOrderList.length > 0 ? {
+    d: common_vendor.f($options.filteredOrderList, (order, index, i0) => {
+      return common_vendor.e({
+        a: common_vendor.t(order.hotelName),
         b: common_vendor.t(order.status),
-        c: common_vendor.n(order.status.toLowerCase()),
-        d: common_vendor.t(order.hotelName || "N/A"),
-        e: common_vendor.t(order.roomType || "N/A"),
-        f: common_vendor.t(order.status === "PAID" ? "Paid Time:" : "Completed Time:"),
-        g: common_vendor.t(order.status === "PAID" ? $options.formatDate(order.createTime) : $options.formatDate(order.completeTime)),
-        h: common_vendor.t(order.totalPrice),
+        c: common_vendor.n($options.getStatusClass(order.status)),
+        d: common_vendor.t(order.roomType),
+        e: common_vendor.t(order.totalPrice),
+        f: common_vendor.t(order.guestName || "N/A"),
+        g: common_vendor.t(order.guestPhone || "N/A"),
+        h: common_vendor.t($options.formatTime(order)),
         i: order.status === "PAID"
       }, order.status === "PAID" ? {
-        j: common_vendor.o(($event) => $options.handleComplete(order.id), order.id),
-        k: common_vendor.o(($event) => $options.handleCancel(order.id), order.id)
+        j: common_vendor.o(($event) => $options.handleCancel(order.id), index),
+        k: common_vendor.o(($event) => $options.handleComplete(order.id), index)
       } : {}, {
-        l: order.id
+        l: order.status === "COMPLETED"
+      }, order.status === "COMPLETED" ? {
+        m: common_vendor.o(($event) => $options.openReviewModal(order), index)
+      } : {}, {
+        n: index
       });
     })
   } : {
-    g: common_vendor.t($data.currentTab.toLowerCase())
-  });
+    e: common_assets._imports_0,
+    f: common_vendor.t($data.currentTab.toLowerCase())
+  }, {
+    g: $data.isReviewModalShow
+  }, $data.isReviewModalShow ? {
+    h: $data.reviewContent,
+    i: common_vendor.o(($event) => $data.reviewContent = $event.detail.value),
+    j: common_vendor.o(($event) => $data.isReviewModalShow = false),
+    k: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args)),
+    l: common_vendor.o(() => {
+    }),
+    m: common_vendor.o(($event) => $data.isReviewModalShow = false)
+  } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createPage(MiniProgramPage);

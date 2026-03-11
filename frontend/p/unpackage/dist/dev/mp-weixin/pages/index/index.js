@@ -6,9 +6,7 @@ const _sfc_main = {
       hotelList: [],
       filteredHotelList: [],
       searchKeyword: "",
-      // 用于弹出层选择的完整文字
       sortOptions: ["Default", "Price: Low to High", "Price: High to Low", "Star: High to Low", "Star: Low to High"],
-      // 核心修改：用于首页表盘显示的极简字符
       sortDisplayOptions: ["Default", "Price ↑", "Price ↓", "Star ↓", "Star ↑"],
       locationOptions: ["All Regions", "Street 1", "Street 2", "Street 3", "Street 4", "Street 5"],
       sortIndex: 0,
@@ -96,19 +94,20 @@ const _sfc_main = {
       this.applyFilters();
       common_vendor.index.showToast({ title: "Located: Street 1", icon: "none" });
     },
-    getHotelImage(hotel) {
+    // 修改点：改为返回图片数组用于轮播
+    getHotelImages(hotel) {
       var _a, _b, _c, _d, _e;
-      if ((_a = hotel.name) == null ? void 0 : _a.includes("Hotel A"))
-        return "/static/1.jpg";
-      if ((_b = hotel.name) == null ? void 0 : _b.includes("Hotel B"))
-        return "/static/2.jpg";
-      if ((_c = hotel.name) == null ? void 0 : _c.includes("Hotel C"))
-        return "/static/3.jpg";
-      if ((_d = hotel.name) == null ? void 0 : _d.includes("Hotel D"))
-        return "/static/4.jpg";
-      if ((_e = hotel.name) == null ? void 0 : _e.includes("Hotel E"))
-        return "/static/5.jpg";
-      return "/static/logo.png";
+      if ((_a = hotel.name) == null ? void 0 : _a.includes("Hotel A")) {
+        return ["/static/1.jpg", "/static/1-1.jpg", "/static/1-2.jpg"];
+      } else if ((_b = hotel.name) == null ? void 0 : _b.includes("Hotel B")) {
+        return ["/static/2.jpg", "/static/2-1.jpg", "/static/2-2.jpg"];
+      } else if ((_c = hotel.name) == null ? void 0 : _c.includes("Hotel C")) {
+        return ["/static/3.jpg", "/static/3-1.jpg", "/static/3-2.jpg"];
+      } else if ((_d = hotel.name) == null ? void 0 : _d.includes("Hotel D")) {
+        return ["/static/4.jpg", "/static/4-1.jpg", "/static/4-2.jpg"];
+      } else if ((_e = hotel.name) == null ? void 0 : _e.includes("Hotel E")) {
+        return ["/static/5.jpg", "/static/5-1.jpg", "/static/5-2.jpg"];
+      }
     }
   }
 };
@@ -129,17 +128,24 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     m: common_vendor.o((...args) => $options.showRoomPicker && $options.showRoomPicker(...args)),
     n: common_vendor.f($data.filteredHotelList, (hotel, k0, i0) => {
       return common_vendor.e({
-        a: $options.getHotelImage(hotel),
-        b: common_vendor.t(hotel.name),
-        c: hotel.capacity
+        a: common_vendor.f($options.getHotelImages(hotel), (img, index, i1) => {
+          return {
+            a: img,
+            b: index
+          };
+        }),
+        b: common_vendor.o(() => {
+        }, hotel.id),
+        c: common_vendor.t(hotel.name),
+        d: hotel.capacity
       }, hotel.capacity ? {
-        d: common_vendor.t(hotel.capacity)
+        e: common_vendor.t(hotel.capacity)
       } : {}, {
-        e: common_vendor.t(hotel.address),
-        f: common_vendor.t(hotel.price),
-        g: common_vendor.t(hotel.starRating),
-        h: hotel.id,
-        i: common_vendor.o(($event) => $options.goToDetail(hotel.id), hotel.id)
+        f: common_vendor.t(hotel.address),
+        g: common_vendor.t(hotel.price),
+        h: common_vendor.t(hotel.starRating),
+        i: hotel.id,
+        j: common_vendor.o(($event) => $options.goToDetail(hotel.id), hotel.id)
       });
     }),
     o: $data.isRoomPickerShow

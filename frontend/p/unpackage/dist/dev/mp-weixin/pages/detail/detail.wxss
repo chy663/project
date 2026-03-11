@@ -1,4 +1,5 @@
 
+/* 保持原有样式不变 */
 .container { padding: 20rpx; background-color: #f5f5f5; min-height: 100vh;
 }
 .hotel-header { background: #fff; border-radius: 15rpx; overflow: hidden; margin-bottom: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
@@ -11,86 +12,49 @@
 }
 .room-list { background: #fff; border-radius: 15rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
 }
-.room-item { 
-	display: flex; 
-	flex-direction: row; 
-	justify-content: space-between; 
-	align-items: center; 
-	padding: 30rpx; 
-	border-bottom: 1rpx solid #f0f0f0;
+.room-item { display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 30rpx; border-bottom: 1rpx solid #f0f0f0;
 }
-.room-details { 
-	flex: 1; 
-	display: flex; 
-	flex-direction: column; 
-	align-items: flex-start;
+.room-thumbnail { width: 180rpx; height: 180rpx; border-radius: 12rpx; margin-right: 20rpx; flex-shrink: 0;
 }
-.room-title-row { 
-	display: flex; 
-	flex-direction: row; 
-	align-items: center; 
-	margin-bottom: 12rpx;
-	width: 100%;
+.room-details { flex: 1; display: flex; flex-direction: column; align-items: flex-start;
 }
-.name-container {
-	flex: 0 0 240rpx; 
-	margin-right: 20rpx;
+.room-title-row { display: flex; flex-direction: row; align-items: center; margin-bottom: 12rpx; width: 100%;
 }
-.room-type { 
-	font-size: 32rpx; 
-	font-weight: bold; 
-	color: #333;
+.name-container { flex: 0 0 180rpx; margin-right: 15rpx;
 }
-.stock-container {
-	flex: 1;
+.room-type { font-size: 28rpx; font-weight: bold; color: #333;
 }
-.room-inventory { 
-	font-size: 22rpx; 
-	padding: 4rpx 12rpx; 
-	border-radius: 6rpx; 
-	white-space: nowrap;
+.room-inventory { font-size: 20rpx; padding: 4rpx 10rpx; border-radius: 6rpx; white-space: nowrap;
+}
+.stock-green { color: #28a745; background: #eafaf1;
+}
+.stock-red { color: #ff4d4f; background: #fff1f0;
+}
+.room-price { font-size: 28rpx; color: #000000; font-weight: bold; margin-bottom: 8rpx;
+}
+.room-max { font-size: 22rpx; color: #999;
+}
+.book-button { background-color: #28a745; color: white; font-size: 24rpx; width: 120rpx; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; margin-left: 15rpx; display: flex; justify-content: center; align-items: center;
+}
+.disabled-btn { background-color: #ccc !important;
 }
 
-/* Green Stock Style (>0) */
-.stock-green { 
-	color: #28a745; 
-	background: #eafaf1;
+/* 弹窗样式 */
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center;
 }
-
-/* Red Stock Style (==0) */
-.stock-red { 
-	color: #ff4d4f; 
-	background: #fff1f0;
+.modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx;
 }
-.room-price { 
-	font-size: 30rpx; 
-	color: #ff5a5f; 
-	font-weight: bold; 
-	margin-bottom: 8rpx;
+.modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx;
 }
-.room-max { 
-	font-size: 24rpx; 
-	color: #999;
+.input-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #eee;
 }
-
-/* Updated Button Color to Green */
-.book-button { 
-	background-color: #28a745; /* Green */
-	color: white; 
-	font-size: 26rpx; 
-	width: 150rpx; 
-	height: 70rpx; 
-	line-height: 70rpx; 
-	border-radius: 35rpx; 
-	margin-left: 20rpx;
-	flex-shrink: 0;
-	padding: 0;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+.label { width: 120rpx; font-size: 28rpx; color: #333;
 }
-
-/* Disabled/Full button remains grey */
-.disabled-btn { 
-	background-color: #ccc !important;
+.uni-input { flex: 1; font-size: 28rpx;
+}
+.modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx;
+}
+.cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx;
+}
+.confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx;
 }

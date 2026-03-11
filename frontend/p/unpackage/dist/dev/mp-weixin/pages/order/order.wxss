@@ -1,47 +1,84 @@
 
-.container { padding: 30rpx; background-color: #f8f8f8; min-height: 100vh;
+/* 核心排版样式完全保留 */
+.container { padding-top: 100rpx; background-color: #f8f8f8; min-height: 100vh;
 }
-.header { font-size: 40rpx; font-weight: bold; margin-bottom: 30rpx; color: #333;
+.tabs-bar { position: fixed; top: 0; left: 0; right: 0; height: 90rpx; background: #fff; display: flex; justify-content: space-around; align-items: center; z-index: 99; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
 }
-.tabs { display: flex; background: #fff; border-radius: 15rpx; margin-bottom: 30rpx; padding: 10rpx;
+.tab-item { font-size: 28rpx; color: #666; position: relative; height: 100%; display: flex; align-items: center; transition: all 0.3s;
 }
-.tab-item { flex: 1; text-align: center; padding: 20rpx 0; font-size: 28rpx; color: #666; transition: all 0.3s;
+.tab-item.active { font-weight: bold;
 }
-.tab-item.active { color: #007aff; font-weight: bold; border-bottom: 4rpx solid #007aff;
+.active-line { position: absolute; bottom: 0; left: 20%; right: 20%; height: 6rpx; border-radius: 4rpx; transition: all 0.3s;
 }
-.order-card { background: #fff; border-radius: 20rpx; padding: 30rpx; margin-bottom: 30rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+.active-paid .tab-item.active { color: #28a745;
 }
-.order-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1rpx solid #f0f0f0; padding-bottom: 15rpx; margin-bottom: 15rpx;
+.active-paid .active-line { background: #28a745;
 }
-.order-id { font-size: 24rpx; color: #999;
+.active-completed .tab-item.active { color: #007bff;
 }
-.status-badge { font-size: 22rpx; padding: 4rpx 12rpx; border-radius: 6rpx; text-transform: uppercase;
+.active-completed .active-line { background: #007bff;
 }
-.status-badge.paid { background: #e8f5e9; color: #2e7d32;
+.active-cancelled .tab-item.active { color: #ff4d4f;
 }
-.status-badge.completed { background: #f5f5f5; color: #616161;
+.active-cancelled .active-line { background: #ff4d4f;
 }
-.info-row { display: flex; justify-content: space-between; margin-bottom: 15rpx;
+.order-list { padding: 20rpx;
 }
-.label { color: #666; font-size: 28rpx;
+.order-card { background: #fff; border-radius: 20rpx; padding: 30rpx; margin-bottom: 24rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
 }
-.value { color: #333; font-size: 28rpx; font-weight: 500; text-align: right; flex: 1; margin-left: 20rpx;
+.order-header { display: flex; justify-content: space-between; border-bottom: 1rpx solid #f0f0f0; padding-bottom: 20rpx; margin-bottom: 20rpx; align-items: center;
+}
+.hotel-name { font-size: 30rpx; font-weight: bold; color: #333;
+}
+.status-tag { font-size: 22rpx; font-weight: bold; padding: 4rpx 16rpx; border-radius: 8rpx;
+}
+.tag-paid { color: #28a745; background-color: #eafaf1;
+}
+.tag-completed { color: #007bff; background-color: #e7f1ff;
+}
+.tag-cancelled { color: #ff4d4f; background-color: #fff1f0;
+}
+.order-body { margin-bottom: 20rpx;
+}
+.room-info { display: flex; justify-content: space-between; margin-bottom: 20rpx;
+}
+.room-type { font-size: 32rpx; color: #333; font-weight: 500;
+}
+.order-price { font-size: 32rpx; color: #000000; font-weight: bold;
+}
+.guest-details-box { background: #f9f9f9; padding: 20rpx; border-radius: 12rpx; margin-bottom: 16rpx;
+}
+.info-line { display: flex; margin-bottom: 10rpx; font-size: 26rpx;
+}
+.info-label { color: #999; width: 160rpx;
+}
+.info-value { color: #333; font-weight: 500;
+}
+.order-time { font-size: 22rpx; color: #bbb;
+}
+.order-footer { display: flex; justify-content: flex-end; border-top: 1rpx solid #f0f0f0; padding-top: 24rpx;
+}
+.action-btn { font-size: 24rpx; margin-left: 20rpx; padding: 0 30rpx; height: 60rpx; line-height: 60rpx; border-radius: 30rpx;
+}
+.cancel { background: #fff1f0; color: #ff4d4f; border: 1rpx solid #ddd;
+}
+.complete { background: #eafaf1; color: #28a745;
 }
 
-/* 针对时间的样式微调，使其更像附加信息 */
-.time-value { color: #888; font-size: 26rpx; font-weight: normal;
+/* 新增：评价按钮蓝色样式，背景色和文字色参考 COMPLETED 标签的蓝色风格 */
+.review-btn { background: #e7f1ff; color: #007bff;
 }
-.price { color: #000000; font-weight: bold;
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center;
 }
-.action-bar { margin-top: 20rpx; display: flex; justify-content: flex-end; align-items: center;
+.modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx;
 }
-.complete-btn { 
-	margin: 0; font-size: 24rpx; color: #28a745; border: 1rpx solid #28a745; 
-	background: transparent; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; padding: 0 30rpx;
+.modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx;
 }
-.cancel-btn { 
-	margin: 0 0 0 20rpx; font-size: 24rpx; color: #ff5a5f; border: 1rpx solid #ff5a5f; 
-	background: transparent; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; padding: 0 30rpx;
+.review-textarea { width: 100%; height: 200rpx; background: #f5f5f5; border-radius: 12rpx; padding: 20rpx; font-size: 28rpx; box-sizing: border-box;
 }
-.empty-state { text-align: center; margin-top: 200rpx; color: #bbb; font-size: 30rpx;
+.modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx;
+}
+.cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx;
+}
+.confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx;
 }

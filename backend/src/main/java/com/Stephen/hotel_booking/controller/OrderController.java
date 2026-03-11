@@ -11,12 +11,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // 允许前端跨域请求
 public class OrderController {
 
     @Autowired
@@ -30,7 +29,7 @@ public class OrderController {
 
     /**
      * 1. 创建预订订单
-     * 自动补全酒店名称和房型名称，并统一状态为 PAID
+     * 接收前端传来的 roomId, userId, guestName, guestPhone 等信息
      */
     @PostMapping("/book")
     @Transactional
@@ -56,6 +55,7 @@ public class OrderController {
             // 统一使用 PAID 状态
             bookingRequest.setStatus("PAID");
 
+            // 注意：bookingRequest 中的 guestName 和 guestPhone 会自动被 JPA 持久化到数据库
             Order savedOrder = orderRepository.save(bookingRequest);
             return ResponseEntity.ok(savedOrder);
         } else {
@@ -65,7 +65,7 @@ public class OrderController {
 
     /**
      * 2. 取消订单/退订接口
-     * 严格校验：仅允许 PAID 状态的订单退订，退订后恢复库存，状态变为 CANCELLED
+     * 仅允许 PAID 状态的订单退订，退订后恢复库存
      */
     @PostMapping("/{orderId}/cancel")
     @Transactional
@@ -73,24 +73,21 @@ public class OrderController {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        // 校验：目前只处理 PAID 状态的退订
         if (!"PAID".equals(order.getStatus())) {
             return ResponseEntity.badRequest().body("Only PAID orders can be cancelled");
         }
 
-        // 修改订单状态为 CANCELLED
         order.setStatus("CANCELLED");
         orderRepository.save(order);
 
-        // 调用 RoomRepository 恢复库存
+        // 恢复库存
         roomRepository.increaseInventory(order.getRoomId());
 
         return ResponseEntity.ok("Order cancelled successfully");
     }
 
     /**
-     * 3. 完成订单接口 (新增)
-     * 将订单状态从 PAID 改为 COMPLETED（代表用户已入住/离店，不需要修改库存）
+     * 3. 完成订单接口
      */
     @PostMapping("/{orderId}/complete")
     @Transactional
@@ -102,12 +99,8 @@ public class OrderController {
             return ResponseEntity.badRequest().body("Only PAID orders can be completed");
         }
 
-        // 1. 修改订单状态为 COMPLETED
         order.setStatus("COMPLETED");
-
-        // 2. 记录当前时间为完成时间
         order.setCompleteTime(java.time.LocalDateTime.now());
-
         orderRepository.save(order);
 
         return ResponseEntity.ok("Order completed successfully");

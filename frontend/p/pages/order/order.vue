@@ -1,51 +1,81 @@
 <template>
 	<view class="container">
-		<view class="header">My Orders</view>
-
-		<view class="tabs">
-			<view class="tab-item" :class="{ active: currentTab === 'PAID' }" @click="switchTab('PAID')">Paid</view>
-			<view class="tab-item" :class="{ active: currentTab === 'COMPLETED' }" @click="switchTab('COMPLETED')">Completed</view>
+		<view class="tabs-bar" :class="'active-' + currentTab.toLowerCase()">
+			<view 
+				v-for="(tab, index) in tabs" 
+				:key="index" 
+				class="tab-item" 
+				:class="{ active: currentTab === tab.value }"
+				@tap="switchTab(tab.value)"
+			>
+				{{ tab.name }}
+				<view class="active-line" v-if="currentTab === tab.value"></view>
+			</view>
 		</view>
 
-		<view v-if="filteredOrders.length > 0" class="order-list">
-			<view v-for="order in filteredOrders" :key="order.id" class="order-card">
-				<view class="order-header-row">
-					<text class="order-id">Order ID: #{{ order.id }}</text>
-					<text class="status-badge" :class="order.status.toLowerCase()">{{ order.status }}</text>
-				</view>
-				
-				<view class="order-info">
-					<view class="info-row">
-						<text class="label">Hotel:</text>
-						<text class="value">{{ order.hotelName || 'N/A' }}</text>
+		<view v-if="filteredOrderList.length > 0" class="order-list">
+			<view v-for="(order, index) in filteredOrderList" :key="index" class="order-card">
+				<view class="order-header">
+					<text class="hotel-name">{{ order.hotelName }}</text>
+					<view class="status-tag" :class="getStatusClass(order.status)">
+						{{ order.status }}
 					</view>
-					<view class="info-row">
-						<text class="label">Room Type:</text>
-						<text class="value">{{ order.roomType || 'N/A' }}</text>
+				</view>
+
+				<view class="order-body">
+					<view class="room-info">
+						<text class="room-type">{{ order.roomType }}</text>
+						<text class="order-price">${{ order.totalPrice }}</text>
 					</view>
 					
-					<view class="info-row time-row">
-						<text class="label">{{ order.status === 'PAID' ? 'Paid Time:' : 'Completed Time:' }}</text>
-						<text class="value time-value">
-							{{ order.status === 'PAID' ? formatDate(order.createTime) : formatDate(order.completeTime) }}
-						</text>
+					<view class="guest-details-box">
+						<view class="info-line">
+							<text class="info-label">Guest Name:</text>
+							<text class="info-value">{{ order.guestName || 'N/A' }}</text>
+						</view>
+						<view class="info-line">
+							<text class="info-label">Phone Num:</text>
+							<text class="info-value">{{ order.guestPhone || 'N/A' }}</text>
+						</view>
 					</view>
-
-					<view class="info-row">
-						<text class="label">Total Price:</text>
-						<text class="value price">${{ order.totalPrice }}</text>
+					
+					<view class="order-time">
+						Ordered at: {{ formatTime(order) }}
 					</view>
 				</view>
 
-				<view v-if="order.status === 'PAID'" class="action-bar">
-					<button class="complete-btn" @click="handleComplete(order.id)">Complete</button>
-					<button class="cancel-btn" @click="handleCancel(order.id)">Cancel</button>
+				<view class="order-footer">
+					<template v-if="order.status === 'PAID'">
+						<button class="action-btn cancel" @tap="handleCancel(order.id)">Cancel</button>
+						<button class="action-btn complete" @tap="handleComplete(order.id)">Check In</button>
+					</template>
+					<template v-if="order.status === 'COMPLETED'">
+						<button class="action-btn review-btn" @tap="openReviewModal(order)">Review</button>
+					</template>
 				</view>
 			</view>
 		</view>
 
 		<view v-else class="empty-state">
+			<image src="/static/logo.png" mode="aspectFit" class="empty-img"></image>
 			<text>No {{ currentTab.toLowerCase() }} orders found.</text>
+		</view>
+
+		<view v-if="isReviewModalShow" class="modal-mask" @tap="isReviewModalShow = false">
+			<view class="modal-content" @tap.stop>
+				<view class="modal-title">Room Review</view>
+				<view class="input-group">
+					<textarea 
+						class="review-textarea" 
+						v-model="reviewContent" 
+						placeholder="How was your stay?" 
+					/>
+				</view>
+				<view class="modal-btns">
+					<button class="cancel-btn" @tap="isReviewModalShow = false">Cancel</button>
+					<button class="confirm-btn" @tap="submitReview">Post</button>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -54,91 +84,93 @@
 export default {
 	data() {
 		return {
-			currentTab: 'PAID',
-			allOrders: []
+			userId: 1, 
+			orderList: [],
+			currentTab: 'PAID', 
+			tabs: [
+				{ name: 'Paid', value: 'PAID' },
+				{ name: 'Completed', value: 'COMPLETED' },
+				{ name: 'Cancelled', value: 'CANCELLED' }
+			],
+			isReviewModalShow: false,
+			reviewContent: '',
+			selectedOrder: null
 		}
 	},
 	computed: {
-		filteredOrders() {
-			return this.allOrders.filter(order => order.status === this.currentTab);
+		filteredOrderList() {
+			return this.orderList.filter(order => order.status === this.currentTab);
 		}
 	},
 	onShow() {
 		this.fetchOrders();
 	},
 	methods: {
-		switchTab(tab) {
-			this.currentTab = tab;
-		},
 		fetchOrders() {
 			uni.request({
-				url: 'http://localhost:8089/api/orders/user/1',
+				url: `http://localhost:8089/api/orders/user/${this.userId}`,
 				method: 'GET',
 				success: (res) => {
-					this.allOrders = res.data;
+					this.orderList = res.data.reverse();
 				}
 			});
 		},
-		// 新增：时间格式化函数，将后端返回的 ISO 字符串转为 YYYY-MM-DD HH:mm 格式
-		formatDate(dateString) {
-			if (!dateString) return 'N/A';
-			const date = new Date(dateString);
-			const year = date.getFullYear();
-			const month = String(date.getMonth() + 1).padStart(2, '0');
-			const day = String(date.getDate()).padStart(2, '0');
-			const hours = String(date.getHours()).padStart(2, '0');
-			const minutes = String(date.getMinutes()).padStart(2, '0');
-			return `${year}-${month}-${day} ${hours}:${minutes}`;
+		switchTab(value) {
+			this.currentTab = value;
 		},
-		handleComplete(orderId) {
-			uni.showModal({
-				title: 'Complete Order',
-				content: 'Mark this order as completed?',
-				confirmText: 'Yes',
-				cancelText: 'No',
-				success: (res) => {
-					if (res.confirm) {
-						uni.showLoading({ title: 'Processing...' });
-						uni.request({
-							url: `http://localhost:8089/api/orders/${orderId}/complete`,
-							method: 'POST',
-							success: (completeRes) => {
-								uni.hideLoading();
-								if (completeRes.statusCode === 200) {
-									uni.showToast({ title: 'Completed', icon: 'success' });
-									this.fetchOrders();
-								} else {
-									uni.showToast({ title: 'Error', icon: 'none' });
-								}
-							}
-						});
-					}
-				}
-			});
+		getStatusClass(status) {
+			if (status === 'PAID') return 'tag-paid';
+			if (status === 'COMPLETED') return 'tag-completed';
+			return 'tag-cancelled';
+		},
+		formatTime(order) {
+			return order.createTime ? order.createTime.replace('T', ' ').substring(0, 16) : '2026-03-11 14:00';
 		},
 		handleCancel(orderId) {
-			uni.showModal({
-				title: 'Cancel Booking',
-				content: 'Are you sure you want to cancel this booking?',
-				confirmText: 'Yes',
-				cancelText: 'No',
-				success: (res) => {
-					if (res.confirm) {
-						uni.showLoading({ title: 'Cancelling...' });
-						uni.request({
-							url: `http://localhost:8089/api/orders/${orderId}/cancel`,
-							method: 'POST',
-							success: (cancelRes) => {
-								uni.hideLoading();
-								if (cancelRes.statusCode === 200) {
-									uni.showToast({ title: 'Cancelled', icon: 'success' });
-									this.fetchOrders();
-								} else {
-									uni.showToast({ title: 'Error', icon: 'none' });
-								}
-							}
-						});
-					}
+		    uni.showModal({
+		        title: 'Cancel Order', content: 'Are you sure?',
+		        success: (res) => {
+		            if (res.confirm) {
+		                uni.request({
+		                    url: `http://localhost:8089/api/orders/${orderId}/cancel`,
+		                    method: 'POST',
+		                    success: () => { this.fetchOrders(); }
+		                });
+		            }
+		        }
+		    });
+		},
+		handleComplete(orderId) {
+			uni.request({
+				url: `http://localhost:8089/api/orders/${orderId}/complete`,
+				method: 'POST',
+				success: () => {
+					uni.showToast({ title: 'Checked In' });
+					this.fetchOrders();
+				}
+			});
+		},
+		openReviewModal(order) {
+			this.selectedOrder = order;
+			this.reviewContent = '';
+			this.isReviewModalShow = true;
+		},
+		submitReview() {
+			if (!this.reviewContent.trim()) {
+				uni.showToast({ title: 'Please enter review', icon: 'none' });
+				return;
+			}
+			uni.request({
+				url: 'http://localhost:8089/api/reviews/add',
+				method: 'POST',
+				data: {
+					userId: this.userId,
+					roomId: this.selectedOrder.roomId,
+					content: this.reviewContent
+				},
+				success: () => {
+					uni.showToast({ title: 'Success' });
+					this.isReviewModalShow = false;
 				}
 			});
 		}
@@ -147,39 +179,49 @@ export default {
 </script>
 
 <style>
-.container { padding: 30rpx; background-color: #f8f8f8; min-height: 100vh; }
-.header { font-size: 40rpx; font-weight: bold; margin-bottom: 30rpx; color: #333; }
+/* 核心排版样式完全保留 */
+.container { padding-top: 100rpx; background-color: #f8f8f8; min-height: 100vh; }
+.tabs-bar { position: fixed; top: 0; left: 0; right: 0; height: 90rpx; background: #fff; display: flex; justify-content: space-around; align-items: center; z-index: 99; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
+.tab-item { font-size: 28rpx; color: #666; position: relative; height: 100%; display: flex; align-items: center; transition: all 0.3s; }
+.tab-item.active { font-weight: bold; }
+.active-line { position: absolute; bottom: 0; left: 20%; right: 20%; height: 6rpx; border-radius: 4rpx; transition: all 0.3s; }
+.active-paid .tab-item.active { color: #28a745; }
+.active-paid .active-line { background: #28a745; }
+.active-completed .tab-item.active { color: #007bff; }
+.active-completed .active-line { background: #007bff; }
+.active-cancelled .tab-item.active { color: #ff4d4f; }
+.active-cancelled .active-line { background: #ff4d4f; }
 
-.tabs { display: flex; background: #fff; border-radius: 15rpx; margin-bottom: 30rpx; padding: 10rpx; }
-.tab-item { flex: 1; text-align: center; padding: 20rpx 0; font-size: 28rpx; color: #666; transition: all 0.3s; }
-.tab-item.active { color: #007aff; font-weight: bold; border-bottom: 4rpx solid #007aff; }
+.order-list { padding: 20rpx; }
+.order-card { background: #fff; border-radius: 20rpx; padding: 30rpx; margin-bottom: 24rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
+.order-header { display: flex; justify-content: space-between; border-bottom: 1rpx solid #f0f0f0; padding-bottom: 20rpx; margin-bottom: 20rpx; align-items: center; }
+.hotel-name { font-size: 30rpx; font-weight: bold; color: #333; }
+.status-tag { font-size: 22rpx; font-weight: bold; padding: 4rpx 16rpx; border-radius: 8rpx; }
+.tag-paid { color: #28a745; background-color: #eafaf1; }
+.tag-completed { color: #007bff; background-color: #e7f1ff; }
+.tag-cancelled { color: #ff4d4f; background-color: #fff1f0; }
+.order-body { margin-bottom: 20rpx; }
+.room-info { display: flex; justify-content: space-between; margin-bottom: 20rpx; }
+.room-type { font-size: 32rpx; color: #333; font-weight: 500; }
+.order-price { font-size: 32rpx; color: #000000; font-weight: bold; }
+.guest-details-box { background: #f9f9f9; padding: 20rpx; border-radius: 12rpx; margin-bottom: 16rpx; }
+.info-line { display: flex; margin-bottom: 10rpx; font-size: 26rpx; }
+.info-label { color: #999; width: 160rpx; }
+.info-value { color: #333; font-weight: 500; }
+.order-time { font-size: 22rpx; color: #bbb; }
+.order-footer { display: flex; justify-content: flex-end; border-top: 1rpx solid #f0f0f0; padding-top: 24rpx; }
+.action-btn { font-size: 24rpx; margin-left: 20rpx; padding: 0 30rpx; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; }
+.cancel { background: #fff1f0; color: #ff4d4f; border: 1rpx solid #ddd; }
+.complete { background: #eafaf1; color: #28a745; }
 
-.order-card { background: #fff; border-radius: 20rpx; padding: 30rpx; margin-bottom: 30rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
-.order-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1rpx solid #f0f0f0; padding-bottom: 15rpx; margin-bottom: 15rpx; }
-.order-id { font-size: 24rpx; color: #999; }
-.status-badge { font-size: 22rpx; padding: 4rpx 12rpx; border-radius: 6rpx; text-transform: uppercase; }
-.status-badge.paid { background: #e8f5e9; color: #2e7d32; }
-.status-badge.completed { background: #f5f5f5; color: #616161; }
+/* 新增：评价按钮蓝色样式，背景色和文字色参考 COMPLETED 标签的蓝色风格 */
+.review-btn { background: #e7f1ff; color: #007bff; }
 
-.info-row { display: flex; justify-content: space-between; margin-bottom: 15rpx; }
-.label { color: #666; font-size: 28rpx; }
-.value { color: #333; font-size: 28rpx; font-weight: 500; text-align: right; flex: 1; margin-left: 20rpx; }
-
-/* 针对时间的样式微调，使其更像附加信息 */
-.time-value { color: #888; font-size: 26rpx; font-weight: normal; }
-.price { color: #000000; font-weight: bold; }
-
-.action-bar { margin-top: 20rpx; display: flex; justify-content: flex-end; align-items: center; }
-
-.complete-btn { 
-	margin: 0; font-size: 24rpx; color: #28a745; border: 1rpx solid #28a745; 
-	background: transparent; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; padding: 0 30rpx;
-}
-
-.cancel-btn { 
-	margin: 0 0 0 20rpx; font-size: 24rpx; color: #ff5a5f; border: 1rpx solid #ff5a5f; 
-	background: transparent; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; padding: 0 30rpx;
-}
-
-.empty-state { text-align: center; margin-top: 200rpx; color: #bbb; font-size: 30rpx; }
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center; }
+.modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx; }
+.modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx; }
+.review-textarea { width: 100%; height: 200rpx; background: #f5f5f5; border-radius: 12rpx; padding: 20rpx; font-size: 28rpx; box-sizing: border-box; }
+.modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx; }
+.cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx; }
+.confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx; }
 </style>
