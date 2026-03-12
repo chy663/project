@@ -1,3 +1,12 @@
 
-	/*每个页面公共css */
+	/* 全局过渡效果 */
+view, scroll-view {
+		transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+	/* 强制暗色背景类 */
+.dark-mode {
+		background-color: #1a1a1a !important;
+		color: #e0e0e0 !important;
+}
 page{--status-bar-height:25px;--top-window-height:0px;--window-top:0px;--window-bottom:0px;--window-left:0px;--window-right:0px;--window-magin:0px}[data-c-h="true"]{display: none !important;}

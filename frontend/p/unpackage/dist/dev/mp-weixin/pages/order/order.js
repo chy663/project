@@ -1,7 +1,9 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const mixins_theme = require("../../mixins/theme.js");
 const common_assets = require("../../common/assets.js");
 const _sfc_main = {
+  mixins: [mixins_theme.themeMixin],
   data() {
     return {
       userId: 1,
@@ -23,12 +25,16 @@ const _sfc_main = {
     }
   },
   onShow() {
+    const userInfo = common_vendor.index.getStorageSync("userInfo");
+    if (userInfo && userInfo.id) {
+      this.userId = userInfo.id;
+    }
     this.fetchOrders();
   },
   methods: {
     fetchOrders() {
       common_vendor.index.request({
-        url: `http://localhost:8089/api/orders/user/${this.userId}`,
+        url: `http://localhost:8089/api/orders?userId=${this.userId}`,
         method: "GET",
         success: (res) => {
           this.orderList = res.data.reverse();
@@ -52,12 +58,18 @@ const _sfc_main = {
       common_vendor.index.showModal({
         title: "Cancel Order",
         content: "Are you sure?",
+        // 修改点：左边 Yes (绿色)，右边 No
+        cancelText: "Yes",
+        cancelColor: "#28a745",
+        confirmText: "No",
+        confirmColor: "#000000",
         success: (res) => {
-          if (res.confirm) {
+          if (res.cancel) {
             common_vendor.index.request({
               url: `http://localhost:8089/api/orders/${orderId}/cancel`,
               method: "POST",
               success: () => {
+                common_vendor.index.showToast({ title: "Order Cancelled", icon: "none" });
                 this.fetchOrders();
               }
             });
@@ -139,7 +151,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     })
   } : {
-    e: common_assets._imports_0,
+    e: common_assets._imports_1,
     f: common_vendor.t($data.currentTab.toLowerCase())
   }, {
     g: $data.isReviewModalShow
@@ -151,7 +163,9 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     l: common_vendor.o(() => {
     }),
     m: common_vendor.o(($event) => $data.isReviewModalShow = false)
-  } : {});
+  } : {}, {
+    n: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
+  });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createPage(MiniProgramPage);

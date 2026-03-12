@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view :class="['container', isDark ? 'dark-mode' : '']">
 		<view class="tabs-bar" :class="'active-' + currentTab.toLowerCase()">
 			<view 
 				v-for="(tab, index) in tabs" 
@@ -81,7 +81,10 @@
 </template>
 
 <script>
+import { themeMixin } from '@/mixins/theme.js';
+
 export default {
+	mixins: [themeMixin],
 	data() {
 		return {
 			userId: 1, 
@@ -103,12 +106,16 @@ export default {
 		}
 	},
 	onShow() {
+		const userInfo = uni.getStorageSync('userInfo');
+		if (userInfo && userInfo.id) {
+			this.userId = userInfo.id;
+		}
 		this.fetchOrders();
 	},
 	methods: {
 		fetchOrders() {
 			uni.request({
-				url: `http://localhost:8089/api/orders/user/${this.userId}`,
+				url: `http://localhost:8089/api/orders?userId=${this.userId}`,
 				method: 'GET',
 				success: (res) => {
 					this.orderList = res.data.reverse();
@@ -128,13 +135,23 @@ export default {
 		},
 		handleCancel(orderId) {
 		    uni.showModal({
-		        title: 'Cancel Order', content: 'Are you sure?',
+		        title: 'Cancel Order', 
+				content: 'Are you sure?',
+				// 修改点：左边 Yes (绿色)，右边 No
+				cancelText: 'Yes',
+				cancelColor: '#28a745', 
+				confirmText: 'No',
+				confirmColor: '#000000',
 		        success: (res) => {
-		            if (res.confirm) {
+					// 注意：由于 Yes 变成了取消键，点击 Yes 会触发 res.cancel
+		            if (res.cancel) {
 		                uni.request({
 		                    url: `http://localhost:8089/api/orders/${orderId}/cancel`,
 		                    method: 'POST',
-		                    success: () => { this.fetchOrders(); }
+		                    success: () => { 
+								uni.showToast({ title: 'Order Cancelled', icon: 'none' });
+								this.fetchOrders(); 
+							}
 		                });
 		            }
 		        }
@@ -179,8 +196,7 @@ export default {
 </script>
 
 <style>
-/* 核心排版样式完全保留 */
-.container { padding-top: 100rpx; background-color: #f8f8f8; min-height: 100vh; }
+.container { padding-top: 100rpx; background-color: #f8f8f8; min-height: 100vh; display: flex; flex-direction: column; }
 .tabs-bar { position: fixed; top: 0; left: 0; right: 0; height: 90rpx; background: #fff; display: flex; justify-content: space-around; align-items: center; z-index: 99; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
 .tab-item { font-size: 28rpx; color: #666; position: relative; height: 100%; display: flex; align-items: center; transition: all 0.3s; }
 .tab-item.active { font-weight: bold; }
@@ -213,9 +229,10 @@ export default {
 .action-btn { font-size: 24rpx; margin-left: 20rpx; padding: 0 30rpx; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; }
 .cancel { background: #fff1f0; color: #ff4d4f; border: 1rpx solid #ddd; }
 .complete { background: #eafaf1; color: #28a745; }
-
-/* 新增：评价按钮蓝色样式，背景色和文字色参考 COMPLETED 标签的蓝色风格 */
 .review-btn { background: #e7f1ff; color: #007bff; }
+
+.empty-state { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 200rpx; color: #999; font-size: 28rpx; }
+.empty-img { width: 200rpx; height: 200rpx; margin-bottom: 20rpx; opacity: 0.5; }
 
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center; }
 .modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx; }
@@ -224,4 +241,15 @@ export default {
 .modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx; }
 .cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx; }
 .confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx; }
+
+/* 夜间模式 */
+.dark-mode { background-color: #1a1a1a !important; }
+.dark-mode .tabs-bar, .dark-mode .order-card, .dark-mode .modal-content { background-color: #2c2c2c !important; box-shadow: none !important; }
+.dark-mode .tab-item { color: #888 !important; }
+.dark-mode .hotel-name, .dark-mode .room-type, .dark-mode .order-price, .dark-mode .modal-title { color: #e0e0e0 !important; }
+.dark-mode .guest-details-box, .dark-mode .review-textarea { background-color: #333 !important; }
+.dark-mode .info-value, .dark-mode .review-textarea { color: #bbb !important; }
+.dark-mode .order-header, .dark-mode .order-footer { border-bottom-color: #3d3d3d !important; border-top-color: #3d3d3d !important; }
+.dark-mode .cancel-btn { background-color: #3d3d3d !important; color: #999 !important; }
+.dark-mode .empty-state { color: #666; }
 </style>

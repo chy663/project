@@ -1,6 +1,8 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const mixins_theme = require("../../mixins/theme.js");
 const _sfc_main = {
+  mixins: [mixins_theme.themeMixin],
   data() {
     return {
       hotelList: [],
@@ -17,10 +19,22 @@ const _sfc_main = {
       roomInfoText: ""
     };
   },
-  onLoad() {
-    this.fetchHotelData();
+  onShow() {
+    this.checkLoginState();
   },
   methods: {
+    checkLoginState() {
+      const userInfo = common_vendor.index.getStorageSync("userInfo");
+      if (!userInfo || !userInfo.username) {
+        common_vendor.index.reLaunch({
+          url: "/pages/login/login"
+        });
+      } else {
+        if (this.hotelList.length === 0) {
+          this.fetchHotelData();
+        }
+      }
+    },
     goToDetail(hotelId) {
       common_vendor.index.navigateTo({ url: `/pages/detail/detail?id=${hotelId}` });
     },
@@ -94,7 +108,6 @@ const _sfc_main = {
       this.applyFilters();
       common_vendor.index.showToast({ title: "Located: Street 1", icon: "none" });
     },
-    // 修改点：改为返回图片数组用于轮播
     getHotelImages(hotel) {
       var _a, _b, _c, _d, _e;
       if ((_a = hotel.name) == null ? void 0 : _a.includes("Hotel A")) {
@@ -108,6 +121,7 @@ const _sfc_main = {
       } else if ((_e = hotel.name) == null ? void 0 : _e.includes("Hotel E")) {
         return ["/static/5.jpg", "/static/5-1.jpg", "/static/5-2.jpg"];
       }
+      return ["/static/logo.png"];
     }
   }
 };
@@ -156,7 +170,9 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     s: common_vendor.o(() => {
     }),
     t: common_vendor.o(($event) => $data.isRoomPickerShow = false)
-  } : {});
+  } : {}, {
+    v: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
+  });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createPage(MiniProgramPage);

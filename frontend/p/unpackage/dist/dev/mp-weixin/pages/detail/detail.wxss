@@ -1,5 +1,4 @@
 
-/* 保持原有样式不变 */
 .container { padding: 20rpx; background-color: #f5f5f5; min-height: 100vh;
 }
 .hotel-header { background: #fff; border-radius: 15rpx; overflow: hidden; margin-bottom: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
@@ -38,13 +37,11 @@
 }
 .disabled-btn { background-color: #ccc !important;
 }
-
-/* 弹窗样式 */
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center;
 }
 .modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx;
 }
-.modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx;
+.modal-title { font-size: 34rpx; font-weight: bold; margin-bottom: 30rpx;
 }
 .input-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #eee;
 }
@@ -57,4 +54,28 @@
 .cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx;
 }
 .confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx;
+}
+.action-col { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-left: 15rpx;
+}
+.fav-icon { width: 50rpx; height: 50rpx; margin-bottom: 15rpx; transition: transform 0.2s;
+}
+.fav-icon:active { transform: scale(1.2);
+}
+.action-btn-override { margin-left: 0 !important;
+} 
+
+/* 夜间模式适配 */
+.dark-mode { background-color: #1a1a1a !important;
+}
+.dark-mode .hotel-header, .dark-mode .room-list, .dark-mode .modal-content { background-color: #2c2c2c !important;
+}
+.dark-mode .hotel-name, .dark-mode .room-type, .dark-mode .room-price, .dark-mode .modal-title { color: #e0e0e0 !important;
+}
+.dark-mode .room-item, .dark-mode .input-row { border-bottom-color: #3d3d3d !important;
+}
+.dark-mode .room-max, .dark-mode .label { color: #888 !important;
+}
+.dark-mode .uni-input { color: #ffffff !important;
+}
+.dark-mode .cancel-btn { background-color: #3d3d3d !important; color: #999 !important;
 }

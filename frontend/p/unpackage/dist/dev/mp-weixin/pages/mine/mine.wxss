@@ -1,50 +1,59 @@
 
-/* 样式调整：确保布局清爽且不可交互感明显 */
-.container { padding-top: 0; background-color: #f8f8f8; min-height: 100vh;
+.container { background-color: #f5f7fa; min-height: 100vh; transition: background-color 0.3s;
 }
-.user-card { 
+.header-bg { background: linear-gradient(135deg, #42b983 0%, #32a071 100%); padding: 120rpx 40rpx 100rpx; border-radius: 0 0 50rpx 50rpx;
+}
+.user-card { display: flex; align-items: center;
+}
+.avatar { width: 130rpx; height: 130rpx; border-radius: 50%; border: 6rpx solid rgba(255, 255, 255, 0.4); background: #fff;
+}
+
+/* 修改点：设置 flex 布局方向为纵向，使子元素垂直堆叠 */
+.user-info { 
+	margin-left: 35rpx; 
+	color: #fff; 
 	display: flex; 
-	align-items: center; 
-	background: #42b983; /* 沿用首页主题色 */
-	padding: 100rpx 40rpx 60rpx; 
-	border-radius: 0 0 40rpx 40rpx; 
-	margin-bottom: 30rpx;
+	flex-direction: column; 
+	align-items: flex-start;
 }
-.avatar { 
-	width: 120rpx; 
-	height: 120rpx; 
-	border-radius: 60rpx; 
-	border: 4rpx solid #fff; 
-	background: #fff; 
-	flex-shrink: 0;
+.username { font-size: 40rpx; font-weight: bold;
 }
-.user-info { margin-left: 30rpx; color: #fff;
-}
-.username { font-size: 36rpx; font-weight: bold; display: block;
-}
+
+/* 修改点：调整标签样式，使其更自然地显示在名字下方 */
 .vip-tag { 
 	font-size: 22rpx; 
-	background: rgba(255,255,255,0.2); 
-	padding: 4rpx 12rpx; 
-	border-radius: 20rpx; 
-	margin-top: 10rpx; 
+	color: #d48806; 
+	background-color: #fffbe6; 
+	padding: 4rpx 16rpx; 
+	border-radius: 30rpx; 
+	margin-top: 12rpx; 
 	display: inline-block;
 }
-.menu-list { background: #fff; border-radius: 16rpx; margin: 0 20rpx 20rpx; overflow: hidden;
+.content-wrapper { margin-top: -60rpx; padding: 0 30rpx;
 }
-.menu-item { 
-	display: flex; 
-	align-items: center; 
-	padding: 35rpx 30rpx; 
-	border-bottom: 1rpx solid #f8f8f8;
+.menu-card { background: #fff; border-radius: 24rpx; margin-bottom: 30rpx; padding: 10rpx 30rpx; box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.03);
+}
+.menu-item { display: flex; justify-content: space-between; align-items: center; padding: 35rpx 0; border-bottom: 1rpx solid #f0f0f0;
 }
 .menu-item:last-child { border-bottom: none;
 }
-.menu-text { flex: 1; font-size: 30rpx; color: #333;
+.menu-text { font-size: 30rpx; color: #333;
 }
-.arrow { color: #ccc; font-size: 24rpx;
+.logout-btn { background: #fff; border-radius: 24rpx; padding: 35rpx 0; display: flex; justify-content: center; margin-top: 40rpx;
 }
-.logout { justify-content: center;
+.logout-text { color: #ff4d4f; font-weight: bold;
 }
-.logout .menu-text { color: #ff4d4f; flex: none; font-weight: bold;
+
+/* 暗色模式适配 */
+.dark-mode { background-color: #1a1a1a !important;
+}
+.dark-mode .header-bg { background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+}
+.dark-mode .menu-card, .dark-mode .logout-btn { background: #2c2c2c;
+}
+.dark-mode .menu-text { color: #e0e0e0;
+}
+.dark-mode .menu-item { border-bottom-color: #3d3d3d;
+}
+.dark-mode .vip-tag { background-color: #3d3d3d; color: #ffd700; border: 1rpx solid #555;
 }

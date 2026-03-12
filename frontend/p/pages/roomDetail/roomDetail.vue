@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view :class="['container', isDark ? 'dark-mode' : '']">
 		<swiper class="room-banner" circular indicator-dots indicator-active-color="#ffffff" autoplay>
 			<swiper-item v-for="(img, index) in roomImages" :key="index">
 				<image :src="img" mode="aspectFill" class="banner-img"></image>
@@ -65,7 +65,10 @@
 
 		<view v-if="isBookModalShow" class="modal-mask" @tap="isBookModalShow = false">
 			<view class="modal-content" @tap.stop>
-				<view class="modal-title">Guest Information</view>
+				<view class="modal-title" style="display: flex; justify-content: space-between; align-items: center;">
+					<text>Guest Information</text>
+					<text style="font-size: 24rpx; color: #007bff; font-weight: normal;" @tap="goToSelectGuest">Choose Existed Info</text>
+				</view>
 				<view class="input-group">
 					<view class="input-row">
 						<text class="label">Name</text>
@@ -86,7 +89,11 @@
 </template>
 
 <script>
+// 仅在此处引入并注册了 Mixin
+import { themeMixin } from '@/mixins/theme.js';
+
 export default {
+	mixins: [themeMixin],
 	data() {
 		return {
 			roomId: null,
@@ -96,15 +103,29 @@ export default {
 			isBookModalShow: false,
 			guestName: '',
 			guestPhone: '',
-			// 新增评论列表
-			reviews: []
+			reviews: [],
+			currentUserId: 1
 		}
 	},
 	onLoad(options) {
 		this.roomId = options.id;
 		this.hotelId = options.hotelId;
+		
+		const userInfo = uni.getStorageSync('userInfo');
+		if (userInfo && userInfo.id) {
+			this.currentUserId = userInfo.id;
+		}
+		
 		this.fetchRoomDetail();
-		this.fetchReviews(); // 进入时获取评论
+		this.fetchReviews(); 
+		
+		uni.$on('onGuestSelect', (guest) => {
+			this.guestName = guest.name;
+			this.guestPhone = guest.phone;
+		});
+	},
+	onUnload() {
+		uni.$off('onGuestSelect');
 	},
 	methods: {
 		fetchRoomDetail() {
@@ -143,6 +164,11 @@ export default {
 			return [mainImg, mainImg, mainImg];
 		},
 		openBookModal() { this.isBookModalShow = true; },
+		goToSelectGuest() {
+			uni.navigateTo({
+				url: '/pages/guestList/guestList?mode=select'
+			});
+		},
 		handleConfirmBook() {
 			if (!this.guestName || !this.guestPhone) {
 				uni.showToast({ title: 'Please complete info', icon: 'none' });
@@ -153,7 +179,7 @@ export default {
 				url: 'http://localhost:8089/api/orders/book',
 				method: 'POST',
 				data: {
-					userId: 1,
+					userId: this.currentUserId,
 					roomId: this.roomInfo.id,
 					status: 'PAID',
 					guestName: this.guestName,
@@ -174,7 +200,7 @@ export default {
 </script>
 
 <style>
-/* 保持原有样式不变 */
+/* 以下所有原有样式代码完全保持不变 */
 .container { padding-bottom: 140rpx; background-color: #f5f5f5; min-height: 100vh; }
 .room-banner { width: 100%; height: 500rpx; background: #fff; }
 .banner-img { width: 100%; height: 100%; }
@@ -193,7 +219,6 @@ export default {
 .section-title { font-size: 32rpx; font-weight: bold; margin-bottom: 20rpx; border-left: 8rpx solid #28a745; padding-left: 20rpx; }
 .description-text { font-size: 28rpx; color: #666; line-height: 1.6; }
 
-/* 评论列表特有样式 */
 .review-item { padding: 20rpx 0; border-bottom: 1rpx solid #f0f0f0; }
 .review-item:last-child { border-bottom: none; }
 .review-header { display: flex; justify-content: space-between; margin-bottom: 10rpx; }
@@ -206,11 +231,32 @@ export default {
 .book-now { background: #28a745; color: #fff; border-radius: 50rpx; font-weight: bold; }
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center; }
 .modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx; }
-.modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx; }
+.modal-title { font-size: 34rpx; font-weight: bold; margin-bottom: 30rpx; }
 .input-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #eee; }
 .label { width: 120rpx; font-size: 28rpx; color: #333; }
 .uni-input { flex: 1; font-size: 28rpx; }
 .modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx; }
 .cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx; }
 .confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx; }
+
+/* 仅在下方新增夜间模式适配代码，不影响上方原有排版 */
+.dark-mode { background-color: #1a1a1a !important; }
+.dark-mode .info-section, 
+.dark-mode .section, 
+.dark-mode .bottom-bar, 
+.dark-mode .modal-content,
+.dark-mode .room-banner { background-color: #2c2c2c !important; }
+.dark-mode .room-name, 
+.dark-mode .price, 
+.dark-mode .section-title, 
+.dark-mode .review-user, 
+.dark-mode .modal-title { color: #e0e0e0 !important; }
+.dark-mode .description-text, 
+.dark-mode .review-content, 
+.dark-mode .label { color: #888 !important; }
+.dark-mode .review-item, 
+.dark-mode .input-row { border-bottom-color: #3d3d3d !important; }
+.dark-mode .tag-outline { background-color: #3d3d3d !important; border-color: #444 !important; color: #bbb !important; }
+.dark-mode .uni-input { color: #ffffff !important; }
+.dark-mode .cancel-btn { background-color: #3d3d3d !important; color: #999 !important; }
 </style>

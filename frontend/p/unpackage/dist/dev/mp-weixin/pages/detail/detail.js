@@ -1,23 +1,38 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const mixins_theme = require("../../mixins/theme.js");
 const _sfc_main = {
+  mixins: [mixins_theme.themeMixin],
   data() {
     return {
       hotelId: null,
       hotelName: "Hotel Details",
       hotelImage: "/static/1.jpg",
       roomList: [],
-      // 弹窗相关
       isBookModalShow: false,
       selectedRoom: null,
       guestName: "",
-      guestPhone: ""
+      guestPhone: "",
+      favoriteRoomIds: [],
+      currentUserId: 1
     };
   },
   onLoad(options) {
     this.hotelId = options.id;
     this.hotelImage = `/static/${options.id}.jpg`;
+    const userInfo = common_vendor.index.getStorageSync("userInfo");
+    if (userInfo && userInfo.id) {
+      this.currentUserId = userInfo.id;
+    }
     this.fetchRoomData();
+    this.fetchFavoriteRoomIds();
+    common_vendor.index.$on("onGuestSelect", (guest) => {
+      this.guestName = guest.name;
+      this.guestPhone = guest.phone;
+    });
+  },
+  onUnload() {
+    common_vendor.index.$off("onGuestSelect");
   },
   methods: {
     goToRoomDetail(room) {
@@ -34,7 +49,43 @@ const _sfc_main = {
         }
       });
     },
+    fetchFavoriteRoomIds() {
+      common_vendor.index.request({
+        url: `http://localhost:8089/api/favorites/user/${this.currentUserId}/roomIds`,
+        method: "GET",
+        success: (res) => {
+          if (res.statusCode === 200) {
+            this.favoriteRoomIds = Array.isArray(res.data) ? res.data : [];
+          } else {
+            this.favoriteRoomIds = [];
+          }
+        },
+        fail: (err) => {
+          common_vendor.index.__f__("error", "at pages/detail/detail.vue:138", "Failed to fetch favorite room IDs", err);
+          this.favoriteRoomIds = [];
+        }
+      });
+    },
+    toggleFavorite(room) {
+      common_vendor.index.request({
+        url: "http://localhost:8089/api/favorites/toggle",
+        method: "POST",
+        data: {
+          userId: this.currentUserId,
+          roomId: room.id
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            common_vendor.index.showToast({ title: res.data === "Added" ? "Collected" : "Removed", icon: "none" });
+            this.fetchFavoriteRoomIds();
+          }
+        }
+      });
+    },
     getRoomImage(room) {
+      if (!room || !room.roomType) {
+        return "/static/logo.png";
+      }
       const rt = room.roomType;
       if (rt.includes("Business"))
         return "/static/1-11.jpg";
@@ -62,12 +113,15 @@ const _sfc_main = {
         return "/static/5-33.jpg";
       return "/static/logo.png";
     },
-    // 打开信息填写弹窗
     openBookModal(room) {
       this.selectedRoom = room;
       this.isBookModalShow = true;
     },
-    // 提交预订
+    goToSelectGuest() {
+      common_vendor.index.navigateTo({
+        url: "/pages/guestList/guestList?mode=select"
+      });
+    },
     handleConfirmBook() {
       if (!this.guestName || !this.guestPhone) {
         common_vendor.index.showToast({ title: "Please complete info", icon: "none" });
@@ -78,14 +132,11 @@ const _sfc_main = {
         url: "http://localhost:8089/api/orders/book",
         method: "POST",
         data: {
-          userId: 1,
-          // 模拟当前登录用户
+          userId: this.currentUserId,
           roomId: this.selectedRoom.id,
           status: "PAID",
           guestName: this.guestName,
-          // 发送至后端保存
           guestPhone: this.guestPhone
-          // 发送至后端保存
         },
         success: (orderRes) => {
           common_vendor.index.hideLoading();
@@ -116,26 +167,31 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         d: common_vendor.n(room.totalInventory > 0 ? "stock-green" : "stock-red"),
         e: common_vendor.t(room.price),
         f: common_vendor.t(room.maxPeople),
-        g: common_vendor.t(room.totalInventory > 0 ? "Book" : "Full"),
-        h: room.totalInventory <= 0 ? 1 : "",
-        i: room.totalInventory <= 0,
-        j: common_vendor.o(($event) => $options.openBookModal(room), index),
-        k: index,
-        l: common_vendor.o(($event) => $options.goToRoomDetail(room), index)
+        g: ($data.favoriteRoomIds || []).includes(Number(room.id)) ? "/static/已收藏.png" : "/static/收藏.png",
+        h: common_vendor.o(($event) => $options.toggleFavorite(room), index),
+        i: common_vendor.t(room.totalInventory > 0 ? "Book" : "Full"),
+        j: room.totalInventory <= 0 ? 1 : "",
+        k: room.totalInventory <= 0,
+        l: common_vendor.o(($event) => $options.openBookModal(room), index),
+        m: index,
+        n: common_vendor.o(($event) => $options.goToRoomDetail(room), index)
       };
     }),
     d: $data.isBookModalShow
   }, $data.isBookModalShow ? {
-    e: $data.guestName,
-    f: common_vendor.o(($event) => $data.guestName = $event.detail.value),
-    g: $data.guestPhone,
-    h: common_vendor.o(($event) => $data.guestPhone = $event.detail.value),
-    i: common_vendor.o(($event) => $data.isBookModalShow = false),
-    j: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args)),
-    k: common_vendor.o(() => {
+    e: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args)),
+    f: $data.guestName,
+    g: common_vendor.o(($event) => $data.guestName = $event.detail.value),
+    h: $data.guestPhone,
+    i: common_vendor.o(($event) => $data.guestPhone = $event.detail.value),
+    j: common_vendor.o(($event) => $data.isBookModalShow = false),
+    k: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args)),
+    l: common_vendor.o(() => {
     }),
-    l: common_vendor.o(($event) => $data.isBookModalShow = false)
-  } : {});
+    m: common_vendor.o(($event) => $data.isBookModalShow = false)
+  } : {}, {
+    n: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
+  });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createPage(MiniProgramPage);

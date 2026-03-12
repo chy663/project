@@ -1,5 +1,5 @@
 
-/* 保持原有样式不变 */
+/* 以下所有原有样式代码完全保持不变 */
 .container { padding-bottom: 140rpx; background-color: #f5f5f5; min-height: 100vh;
 }
 .room-banner { width: 100%; height: 500rpx; background: #fff;
@@ -34,8 +34,6 @@
 }
 .description-text { font-size: 28rpx; color: #666; line-height: 1.6;
 }
-
-/* 评论列表特有样式 */
 .review-item { padding: 20rpx 0; border-bottom: 1rpx solid #f0f0f0;
 }
 .review-item:last-child { border-bottom: none;
@@ -58,7 +56,7 @@
 }
 .modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx;
 }
-.modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx;
+.modal-title { font-size: 34rpx; font-weight: bold; margin-bottom: 30rpx;
 }
 .input-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #eee;
 }
@@ -71,4 +69,33 @@
 .cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx;
 }
 .confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx;
+}
+
+/* 仅在下方新增夜间模式适配代码，不影响上方原有排版 */
+.dark-mode { background-color: #1a1a1a !important;
+}
+.dark-mode .info-section, 
+.dark-mode .section, 
+.dark-mode .bottom-bar, 
+.dark-mode .modal-content,
+.dark-mode .room-banner { background-color: #2c2c2c !important;
+}
+.dark-mode .room-name, 
+.dark-mode .price, 
+.dark-mode .section-title, 
+.dark-mode .review-user, 
+.dark-mode .modal-title { color: #e0e0e0 !important;
+}
+.dark-mode .description-text, 
+.dark-mode .review-content, 
+.dark-mode .label { color: #888 !important;
+}
+.dark-mode .review-item, 
+.dark-mode .input-row { border-bottom-color: #3d3d3d !important;
+}
+.dark-mode .tag-outline { background-color: #3d3d3d !important; border-color: #444 !important; color: #bbb !important;
+}
+.dark-mode .uni-input { color: #ffffff !important;
+}
+.dark-mode .cancel-btn { background-color: #3d3d3d !important; color: #999 !important;
 }

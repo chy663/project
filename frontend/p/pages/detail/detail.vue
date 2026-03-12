@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view :class="['container', isDark ? 'dark-mode' : '']">
 		<view class="hotel-header">
 			<image class="hotel-image" :src="hotelImage" mode="aspectFill"></image>
 			<view class="hotel-info">
@@ -27,20 +27,30 @@
 					<text class="room-max">Max People: {{ room.maxPeople }}</text>
 				</view>
 				
-				<button 
-					class="book-button" 
-					:class="{'disabled-btn': room.totalInventory <= 0}"
-					:disabled="room.totalInventory <= 0"
-					@click.stop="openBookModal(room)"
-				>
-					{{ room.totalInventory > 0 ? 'Book' : 'Full' }}
-				</button>
+				<view class="action-col">
+					<image 
+						class="fav-icon" 
+						:src="(favoriteRoomIds || []).includes(Number(room.id)) ? '/static/已收藏.png' : '/static/收藏.png'" 
+						@click.stop="toggleFavorite(room)"
+					></image>
+					<button 
+						class="book-button action-btn-override" 
+						:class="{'disabled-btn': room.totalInventory <= 0}"
+						:disabled="room.totalInventory <= 0"
+						@click.stop="openBookModal(room)"
+					>
+						{{ room.totalInventory > 0 ? 'Book' : 'Full' }}
+					</button>
+				</view>
 			</view>
 		</view>
 
 		<view v-if="isBookModalShow" class="modal-mask" @tap="isBookModalShow = false">
 			<view class="modal-content" @tap.stop>
-				<view class="modal-title">Guest Information</view>
+				<view class="modal-title" style="display: flex; justify-content: space-between; align-items: center;">
+					<text>Guest Information</text>
+					<text style="font-size: 24rpx; color: #007bff; font-weight: normal;" @tap="goToSelectGuest">Choose Existed Info</text>
+				</view>
 				<view class="input-group">
 					<view class="input-row">
 						<text class="label">Name</text>
@@ -61,24 +71,42 @@
 </template>
 
 <script>
+import { themeMixin } from '@/mixins/theme.js';
 export default {
+	mixins: [themeMixin],
 	data() {
 		return {
 			hotelId: null,
 			hotelName: 'Hotel Details',
 			hotelImage: '/static/1.jpg',
 			roomList: [],
-			// 弹窗相关
 			isBookModalShow: false,
 			selectedRoom: null,
 			guestName: '',
-			guestPhone: ''
+			guestPhone: '',
+			favoriteRoomIds: [],
+			currentUserId: 1 
 		}
 	},
 	onLoad(options) {
 		this.hotelId = options.id;
 		this.hotelImage = `/static/${options.id}.jpg`;
+		
+		const userInfo = uni.getStorageSync('userInfo');
+		if (userInfo && userInfo.id) {
+			this.currentUserId = userInfo.id;
+		}
+		
 		this.fetchRoomData();
+		this.fetchFavoriteRoomIds(); 
+		
+		uni.$on('onGuestSelect', (guest) => {
+			this.guestName = guest.name;
+			this.guestPhone = guest.phone;
+		});
+	},
+	onUnload() {
+		uni.$off('onGuestSelect');
 	},
 	methods: {
 		goToRoomDetail(room) {
@@ -95,7 +123,44 @@ export default {
 				}
 			});
 		},
+		fetchFavoriteRoomIds() {
+			uni.request({
+				url: `http://localhost:8089/api/favorites/user/${this.currentUserId}/roomIds`,
+				method: 'GET',
+				success: (res) => {
+					if (res.statusCode === 200) {
+						this.favoriteRoomIds = Array.isArray(res.data) ? res.data : [];
+					} else {
+						this.favoriteRoomIds = [];
+					}
+				},
+				fail: (err) => {
+					console.error("Failed to fetch favorite room IDs", err);
+					this.favoriteRoomIds = [];
+				}
+			});
+		},
+		toggleFavorite(room) {
+			uni.request({
+				url: 'http://localhost:8089/api/favorites/toggle',
+				method: 'POST',
+				data: {
+					userId: this.currentUserId,
+					roomId: room.id
+				},
+				success: (res) => {
+					if (res.statusCode === 200) {
+						uni.showToast({ title: res.data === 'Added' ? 'Collected' : 'Removed', icon: 'none' });
+						this.fetchFavoriteRoomIds(); 
+					}
+				}
+			});
+		},
 		getRoomImage(room) {
+			if (!room || !room.roomType) {
+				return '/static/logo.png'; 
+			}
+			
 			const rt = room.roomType;
 			if (rt.includes('Business')) return '/static/1-11.jpg'; 
 			if (rt.includes('Work-friendly')) return '/static/1-22.jpg';
@@ -111,12 +176,15 @@ export default {
 			if (rt.includes('Student')) return '/static/5-33.jpg';
 			return '/static/logo.png';
 		},
-		// 打开信息填写弹窗
 		openBookModal(room) {
 			this.selectedRoom = room;
 			this.isBookModalShow = true;
 		},
-		// 提交预订
+		goToSelectGuest() {
+			uni.navigateTo({
+				url: '/pages/guestList/guestList?mode=select'
+			});
+		},
 		handleConfirmBook() {
 			if (!this.guestName || !this.guestPhone) {
 				uni.showToast({ title: 'Please complete info', icon: 'none' });
@@ -128,18 +196,18 @@ export default {
 				url: 'http://localhost:8089/api/orders/book',
 				method: 'POST',
 				data: {
-					userId: 1, // 模拟当前登录用户
+					userId: this.currentUserId, 
 					roomId: this.selectedRoom.id,
 					status: 'PAID',
-					guestName: this.guestName, // 发送至后端保存
-					guestPhone: this.guestPhone // 发送至后端保存
+					guestName: this.guestName, 
+					guestPhone: this.guestPhone 
 				},
 				success: (orderRes) => {
 					uni.hideLoading();
 					if (orderRes.statusCode === 200) {
 						uni.showToast({ title: 'Success', icon: 'success' });
 						this.isBookModalShow = false;
-						this.fetchRoomData(); // 刷新库存
+						this.fetchRoomData(); 
 						setTimeout(() => {
 							uni.switchTab({ url: '/pages/order/order' });
 						}, 1500);
@@ -154,7 +222,6 @@ export default {
 </script>
 
 <style>
-/* 保持原有样式不变 */
 .container { padding: 20rpx; background-color: #f5f5f5; min-height: 100vh; }
 .hotel-header { background: #fff; border-radius: 15rpx; overflow: hidden; margin-bottom: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
 .hotel-image { width: 100%; height: 400rpx; }
@@ -178,14 +245,27 @@ export default {
 .book-button { background-color: #28a745; color: white; font-size: 24rpx; width: 120rpx; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; margin-left: 15rpx; display: flex; justify-content: center; align-items: center; }
 .disabled-btn { background-color: #ccc !important; }
 
-/* 弹窗样式 */
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center; }
 .modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx; }
-.modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx; }
+.modal-title { font-size: 34rpx; font-weight: bold; margin-bottom: 30rpx; }
 .input-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #eee; }
 .label { width: 120rpx; font-size: 28rpx; color: #333; }
 .uni-input { flex: 1; font-size: 28rpx; }
 .modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx; }
 .cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx; }
 .confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx; }
+
+.action-col { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-left: 15rpx; }
+.fav-icon { width: 50rpx; height: 50rpx; margin-bottom: 15rpx; transition: transform 0.2s; }
+.fav-icon:active { transform: scale(1.2); }
+.action-btn-override { margin-left: 0 !important; } 
+
+/* 夜间模式适配 */
+.dark-mode { background-color: #1a1a1a !important; }
+.dark-mode .hotel-header, .dark-mode .room-list, .dark-mode .modal-content { background-color: #2c2c2c !important; }
+.dark-mode .hotel-name, .dark-mode .room-type, .dark-mode .room-price, .dark-mode .modal-title { color: #e0e0e0 !important; }
+.dark-mode .room-item, .dark-mode .input-row { border-bottom-color: #3d3d3d !important; }
+.dark-mode .room-max, .dark-mode .label { color: #888 !important; }
+.dark-mode .uni-input { color: #ffffff !important; }
+.dark-mode .cancel-btn { background-color: #3d3d3d !important; color: #999 !important; }
 </style>

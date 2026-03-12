@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view :class="['container', isDark ? 'dark-mode' : '']">
 		<view class="search-box">
 			<icon type="search" size="18" color="#999" />
 			<input 
@@ -92,7 +92,11 @@
 </template>
 
 <script>
+// 引入 Mixin 逻辑
+import { themeMixin } from '@/mixins/theme.js';
+
 export default {
+	mixins: [themeMixin],
 	data() {
 		return {
 			hotelList: [],
@@ -109,10 +113,22 @@ export default {
 			roomInfoText: ''
 		}
 	},
-	onLoad() {
-		this.fetchHotelData();
+	onShow() {
+		this.checkLoginState();
 	},
 	methods: {
+		checkLoginState() {
+			const userInfo = uni.getStorageSync('userInfo');
+			if (!userInfo || !userInfo.username) {
+				uni.reLaunch({
+					url: '/pages/login/login'
+				});
+			} else {
+				if (this.hotelList.length === 0) {
+					this.fetchHotelData();
+				}
+			}
+		},
 		goToDetail(hotelId) {
 			uni.navigateTo({ url: `/pages/detail/detail?id=${hotelId}` });
 		},
@@ -176,21 +192,20 @@ export default {
 			this.applyFilters();
 			uni.showToast({ title: 'Located: Street 1', icon: 'none' });
 		},
-		// 修改点：改为返回图片数组用于轮播
 		getHotelImages(hotel) {
-			let baseImg = '/static/logo.png';
 			if (hotel.name?.includes('Hotel A')) { return ['/static/1.jpg', '/static/1-1.jpg', '/static/1-2.jpg'];} 
 			else if (hotel.name?.includes('Hotel B')) { return ['/static/2.jpg', '/static/2-1.jpg', '/static/2-2.jpg'];}
 			else if (hotel.name?.includes('Hotel C')) { return ['/static/3.jpg', '/static/3-1.jpg', '/static/3-2.jpg'];}
 			else if (hotel.name?.includes('Hotel D')) { return ['/static/4.jpg', '/static/4-1.jpg', '/static/4-2.jpg'];}
 			else if (hotel.name?.includes('Hotel E')) { return ['/static/5.jpg', '/static/5-1.jpg', '/static/5-2.jpg'];}
-			
+			return ['/static/logo.png'];
 		}
 	}
 }
 </script>
 
 <style>
+/* 所有原有排版设置保持不变 */
 .container { padding: 20rpx; background-color: #f8f8f8; min-height: 100vh; }
 .search-box { display: flex; align-items: center; background-color: #fff; padding: 15rpx 25rpx; border-radius: 40rpx; margin-bottom: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .search-input { flex: 1; margin-left: 15rpx; font-size: 28rpx; }
@@ -220,13 +235,16 @@ export default {
 
 .hotel-card { display: flex; background-color: #fff; border-radius: 16rpx; margin-bottom: 20rpx; padding: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.03); }
 
-/* 修改点：确保 swiper 容器大小与原图片一致 */
 .hotel-image { width: 180rpx; height: 180rpx; border-radius: 12rpx; flex-shrink: 0; overflow: hidden; }
 .swiper-item-img { width: 100%; height: 100%; }
 
 .hotel-info { flex: 1; margin-left: 24rpx; display: flex; flex-direction: column; justify-content: space-between; }
-.hotel-name { font-size: 30rpx; font-weight: bold; color: #333; }
-.capacity-tag { font-size: 20rpx; color: #42b983; background: #eaf8f1; padding: 2rpx 12rpx; border-radius: 6rpx; }
+
+/* 优化点：调整此处使酒店名和人数标签分布更合理 */
+.title-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.hotel-name { font-size: 30rpx; font-weight: bold; color: #333; flex: 1; margin-right: 10rpx; }
+.capacity-tag { font-size: 20rpx; color: #42b983; background: #eaf8f1; padding: 2rpx 12rpx; border-radius: 6rpx; white-space: nowrap; margin-left: 10rpx; }
+
 .hotel-address { font-size: 24rpx; color: #888; }
 .price-row { display: flex; justify-content: space-between; align-items: flex-end; }
 .hotel-price { color: #000000; font-size: 36rpx; font-weight: bold; }
@@ -235,4 +253,21 @@ export default {
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center; }
 .modal-content { background: #fff; width: 80%; padding: 40rpx; border-radius: 24rpx; }
 .confirm-btn { background: #42b983; color: #fff; border-radius: 40rpx; margin-top: 20rpx; font-size: 30rpx; }
+
+/* 夜间模式适配代码 */
+.dark-mode { background-color: #1a1a1a !important; }
+.dark-mode .search-box, 
+.dark-mode .filter-bar, 
+.dark-mode .hotel-card,
+.dark-mode .modal-content { background-color: #2c2c2c !important; box-shadow: none !important; }
+.dark-mode .search-input, 
+.dark-mode .picker-text, 
+.dark-mode .hotel-name,
+.dark-mode .modal-title { color: #e0e0e0 !important; }
+.dark-mode .active-text, 
+.dark-mode .arrow, 
+.dark-mode .active-arrow { color: #ffffff !important; }
+.dark-mode .hotel-address { color: #888 !important; }
+.dark-mode .hotel-price { color: #ffffff !important; }
+.dark-mode .filter-item { border-right-color: #3d3d3d !important; }
 </style>

@@ -4,7 +4,12 @@
     "pages/order/order",
     "pages/mine/mine",
     "pages/detail/detail",
-    "pages/roomDetail/roomDetail"
+    "pages/roomDetail/roomDetail",
+    "pages/login/login",
+    "pages/favorites/favorites",
+    "pages/guestList/guestList",
+    "pages/systemsetting/systemsetting",
+    "pages/accountsetting/accountsetting"
   ],
   "window": {
     "navigationBarTextStyle": "black",

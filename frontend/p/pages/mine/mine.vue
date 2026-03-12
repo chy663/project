@@ -1,57 +1,96 @@
 <template>
-	<view class="container">
-		<view class="user-card">
-			<image 
-				class="avatar" 
-				src="/static/头像 男孩.png" 
-				mode="aspectFill"
-			></image>
-			
-			<view class="user-info">
-				<text class="username">Guest_001</text>
-				<text class="vip-tag">Gold Member</text>
+	<view :class="['container', isDark ? 'dark-mode' : '']">
+		<view class="header-bg">
+			<view class="user-card">
+				<image class="avatar" src="/static/头像 男孩.png" mode="aspectFill"></image>
+				<view class="user-info">
+					<text class="username">{{ userInfo.nickname || userInfo.username || 'Please Sign In' }}</text>
+					<text class="vip-tag" v-if="userInfo.username">Gold Member</text>
+				</view>
 			</view>
 		</view>
 
-		<view class="menu-list">
-			<view class="menu-item">
-				<text class="menu-text">My Favorites</text>
-				<text class="arrow">></text>
+		<view class="content-wrapper">
+			<view class="menu-card">
+				<view class="menu-item" @tap="handleMenuClick('My Favorites')">
+					<view class="item-left">
+						<text class="menu-icon">⭐</text>
+						<text class="menu-text">My Favorites</text>
+					</view>
+					<text class="arrow">❯</text>
+				</view>
+				<view class="menu-item" @tap="handleMenuClick('Guest Information')">
+					<view class="item-left">
+						<text class="menu-icon">👥</text>
+						<text class="menu-text">Guest Information</text>
+					</view>
+					<text class="arrow">❯</text>
+				</view>
 			</view>
-			<view class="menu-item">
-				<text class="menu-text">Common Guests</text>
-				<text class="arrow">></text>
-			</view>
-			<view class="menu-item">
-				<text class="menu-text">Coupons</text>
-				<text class="arrow">></text>
-			</view>
-		</view>
 
-		<view class="menu-list">
-			<view class="menu-item logout" @tap="handleLogout">
-				<text class="menu-text">Sign Out</text>
+			<view class="menu-card">
+				<view class="menu-item" @tap="handleMenuClick('Account Settings')">
+					<view class="item-left">
+						<text class="menu-icon">🔒</text>
+						<text class="menu-text">Account Settings</text>
+					</view>
+					<text class="arrow">❯</text>
+				</view>
+				<view class="menu-item" @tap="handleMenuClick('System Settings')">
+					<view class="item-left">
+						<text class="menu-icon">⚙️</text>
+						<text class="menu-text">System Settings</text>
+					</view>
+					<text class="arrow">❯</text>
+				</view>
+			</view>
+
+			<view class="logout-btn" @tap="handleLogout">
+				<text class="logout-text">Sign Out</text>
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
+import { themeMixin } from '@/mixins/theme.js';
 export default {
+	mixins: [themeMixin],
 	data() {
 		return {
-			// 这里不再需要头像相关的变量
+			userInfo: {}
 		}
 	},
+	onShow() {
+		this.userInfo = uni.getStorageSync('userInfo') || {};
+		// mixin 内部已处理 isDark 状态
+	},
 	methods: {
+		handleMenuClick(menuName) {
+			if (menuName === 'My Favorites') {
+				uni.navigateTo({ url: '/pages/favorites/favorites' });
+			} else if (menuName === 'Guest Information') {
+				uni.navigateTo({ url: '/pages/guestList/guestList' });
+			} else if (menuName === 'System Settings') {
+				uni.navigateTo({ url: '/pages/systemsetting/systemsetting' });
+			} else if (menuName === 'Account Settings') { 
+                uni.navigateTo({ url: '/pages/accountsetting/accountsetting' });
+            }
+			else {
+				uni.showToast({ title: `Navigating to ${menuName}`, icon: 'none' });
+			}
+		},
 		handleLogout() {
 			uni.showModal({
 				title: 'Sign Out',
-				content: 'Are you sure you want to log out?',
-				confirmColor: '#42b983', // 沿用首页的绿色
+				content: 'Are you sure?',
+				cancelText: 'Yes',
+				cancelColor: '#42b983',
+				confirmText: 'No',
 				success: (res) => {
-					if (res.confirm) {
-						uni.showToast({ title: 'Logged out', icon: 'none' });
+					if (res.cancel) {
+						uni.removeStorageSync('userInfo');
+						uni.reLaunch({ url: '/pages/login/login' });
 					}
 				}
 			});
@@ -61,49 +100,46 @@ export default {
 </script>
 
 <style>
-/* 样式调整：确保布局清爽且不可交互感明显 */
-.container { padding-top: 0; background-color: #f8f8f8; min-height: 100vh; }
+.container { background-color: #f5f7fa; min-height: 100vh; transition: background-color 0.3s; }
+.header-bg { background: linear-gradient(135deg, #42b983 0%, #32a071 100%); padding: 120rpx 40rpx 100rpx; border-radius: 0 0 50rpx 50rpx; }
+.user-card { display: flex; align-items: center; }
+.avatar { width: 130rpx; height: 130rpx; border-radius: 50%; border: 6rpx solid rgba(255, 255, 255, 0.4); background: #fff; }
 
-.user-card { 
+/* 修改点：设置 flex 布局方向为纵向，使子元素垂直堆叠 */
+.user-info { 
+	margin-left: 35rpx; 
+	color: #fff; 
 	display: flex; 
-	align-items: center; 
-	background: #42b983; /* 沿用首页主题色 */
-	padding: 100rpx 40rpx 60rpx; 
-	border-radius: 0 0 40rpx 40rpx; 
-	margin-bottom: 30rpx;
+	flex-direction: column; 
+	align-items: flex-start; 
 }
 
-.avatar { 
-	width: 120rpx; 
-	height: 120rpx; 
-	border-radius: 60rpx; 
-	border: 4rpx solid #fff; 
-	background: #fff; 
-	flex-shrink: 0;
-}
+.username { font-size: 40rpx; font-weight: bold; }
 
-.user-info { margin-left: 30rpx; color: #fff; }
-.username { font-size: 36rpx; font-weight: bold; display: block; }
+/* 修改点：调整标签样式，使其更自然地显示在名字下方 */
 .vip-tag { 
 	font-size: 22rpx; 
-	background: rgba(255,255,255,0.2); 
-	padding: 4rpx 12rpx; 
-	border-radius: 20rpx; 
-	margin-top: 10rpx; 
+	color: #d48806; 
+	background-color: #fffbe6; 
+	padding: 4rpx 16rpx; 
+	border-radius: 30rpx; 
+	margin-top: 12rpx; 
 	display: inline-block; 
 }
 
-.menu-list { background: #fff; border-radius: 16rpx; margin: 0 20rpx 20rpx; overflow: hidden; }
-.menu-item { 
-	display: flex; 
-	align-items: center; 
-	padding: 35rpx 30rpx; 
-	border-bottom: 1rpx solid #f8f8f8; 
-}
+.content-wrapper { margin-top: -60rpx; padding: 0 30rpx; }
+.menu-card { background: #fff; border-radius: 24rpx; margin-bottom: 30rpx; padding: 10rpx 30rpx; box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.03); }
+.menu-item { display: flex; justify-content: space-between; align-items: center; padding: 35rpx 0; border-bottom: 1rpx solid #f0f0f0; }
 .menu-item:last-child { border-bottom: none; }
-.menu-text { flex: 1; font-size: 30rpx; color: #333; }
-.arrow { color: #ccc; font-size: 24rpx; }
+.menu-text { font-size: 30rpx; color: #333; }
+.logout-btn { background: #fff; border-radius: 24rpx; padding: 35rpx 0; display: flex; justify-content: center; margin-top: 40rpx; }
+.logout-text { color: #ff4d4f; font-weight: bold; }
 
-.logout { justify-content: center; }
-.logout .menu-text { color: #ff4d4f; flex: none; font-weight: bold; }
+/* 暗色模式适配 */
+.dark-mode { background-color: #1a1a1a !important; }
+.dark-mode .header-bg { background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%); }
+.dark-mode .menu-card, .dark-mode .logout-btn { background: #2c2c2c; }
+.dark-mode .menu-text { color: #e0e0e0; }
+.dark-mode .menu-item { border-bottom-color: #3d3d3d; }
+.dark-mode .vip-tag { background-color: #3d3d3d; color: #ffd700; border: 1rpx solid #555; }
 </style>

@@ -1,6 +1,8 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const mixins_theme = require("../../mixins/theme.js");
 const _sfc_main = {
+  mixins: [mixins_theme.themeMixin],
   data() {
     return {
       roomId: null,
@@ -10,15 +12,26 @@ const _sfc_main = {
       isBookModalShow: false,
       guestName: "",
       guestPhone: "",
-      // 新增评论列表
-      reviews: []
+      reviews: [],
+      currentUserId: 1
     };
   },
   onLoad(options) {
     this.roomId = options.id;
     this.hotelId = options.hotelId;
+    const userInfo = common_vendor.index.getStorageSync("userInfo");
+    if (userInfo && userInfo.id) {
+      this.currentUserId = userInfo.id;
+    }
     this.fetchRoomDetail();
     this.fetchReviews();
+    common_vendor.index.$on("onGuestSelect", (guest) => {
+      this.guestName = guest.name;
+      this.guestPhone = guest.phone;
+    });
+  },
+  onUnload() {
+    common_vendor.index.$off("onGuestSelect");
   },
   methods: {
     fetchRoomDetail() {
@@ -64,6 +77,11 @@ const _sfc_main = {
     openBookModal() {
       this.isBookModalShow = true;
     },
+    goToSelectGuest() {
+      common_vendor.index.navigateTo({
+        url: "/pages/guestList/guestList?mode=select"
+      });
+    },
     handleConfirmBook() {
       if (!this.guestName || !this.guestPhone) {
         common_vendor.index.showToast({ title: "Please complete info", icon: "none" });
@@ -74,7 +92,7 @@ const _sfc_main = {
         url: "http://localhost:8089/api/orders/book",
         method: "POST",
         data: {
-          userId: 1,
+          userId: this.currentUserId,
           roomId: this.roomInfo.id,
           status: "PAID",
           guestName: this.guestName,
@@ -130,16 +148,19 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     p: common_vendor.o((...args) => $options.openBookModal && $options.openBookModal(...args)),
     q: $data.isBookModalShow
   }, $data.isBookModalShow ? {
-    r: $data.guestName,
-    s: common_vendor.o(($event) => $data.guestName = $event.detail.value),
-    t: $data.guestPhone,
-    v: common_vendor.o(($event) => $data.guestPhone = $event.detail.value),
-    w: common_vendor.o(($event) => $data.isBookModalShow = false),
-    x: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args)),
-    y: common_vendor.o(() => {
+    r: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args)),
+    s: $data.guestName,
+    t: common_vendor.o(($event) => $data.guestName = $event.detail.value),
+    v: $data.guestPhone,
+    w: common_vendor.o(($event) => $data.guestPhone = $event.detail.value),
+    x: common_vendor.o(($event) => $data.isBookModalShow = false),
+    y: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args)),
+    z: common_vendor.o(() => {
     }),
-    z: common_vendor.o(($event) => $data.isBookModalShow = false)
-  } : {});
+    A: common_vendor.o(($event) => $data.isBookModalShow = false)
+  } : {}, {
+    B: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
+  });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createPage(MiniProgramPage);

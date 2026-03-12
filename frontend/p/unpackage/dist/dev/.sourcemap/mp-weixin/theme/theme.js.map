@@ -1,0 +1,1 @@
+{"version":3,"file":"theme.js","sources":["../../../../下载/HBuilderX.4.87.2025121004/HBuilderX/plugins/uniapp-cli-vite/uniPage:/dGhlbWUvdGhlbWUudnVl"],"sourcesContent":["import MiniProgramPage from 'D:/project/hotel-booking-mini-program-master/frontend/p/theme/theme.vue'\nwx.createPage(MiniProgramPage)"],"names":[],"mappings":";;;;;;;AACA,GAAG,WAAW,eAAe;"}

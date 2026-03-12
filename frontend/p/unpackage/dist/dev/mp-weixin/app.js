@@ -7,6 +7,11 @@ if (!Math) {
   "./pages/mine/mine.js";
   "./pages/detail/detail.js";
   "./pages/roomDetail/roomDetail.js";
+  "./pages/login/login.js";
+  "./pages/favorites/favorites.js";
+  "./pages/guestList/guestList.js";
+  "./pages/systemsetting/systemsetting.js";
+  "./pages/accountsetting/accountsetting.js";
 }
 const _sfc_main = {
   onLaunch: function() {
