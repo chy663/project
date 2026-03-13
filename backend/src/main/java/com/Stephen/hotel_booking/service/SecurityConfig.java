@@ -1,4 +1,4 @@
-package com.Stephen.hotel_booking;
+package com.Stephen.hotel_booking.service;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
