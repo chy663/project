@@ -13,6 +13,13 @@ const _sfc_main = {
     };
   },
   methods: {
+    // 切换登录/注册模式时清空表单
+    toggleMode() {
+      this.isRegister = !this.isRegister;
+      this.form.username = "";
+      this.form.password = "";
+      this.form.nickname = "";
+    },
     handleToggle() {
       const currentPwd = this.form.password;
       this.showPassword = !this.showPassword;
@@ -22,7 +29,7 @@ const _sfc_main = {
     },
     handleSubmit() {
       if (!this.form.username || !this.form.password) {
-        return common_vendor.index.showToast({ title: "Fill the form", icon: "none" });
+        return common_vendor.index.showToast({ title: "Please fill all fields", icon: "none" });
       }
       const url = this.isRegister ? "/api/users/register" : "/api/users/login";
       common_vendor.index.request({
@@ -31,16 +38,34 @@ const _sfc_main = {
         data: this.form,
         success: (res) => {
           if (res.statusCode === 200) {
-            common_vendor.index.showToast({ title: "Success" });
-            common_vendor.index.setStorageSync("userInfo", res.data);
             if (this.isRegister) {
+              common_vendor.index.showToast({ title: "Register Success!" });
               this.isRegister = false;
             } else {
-              setTimeout(() => common_vendor.index.switchTab({ url: "/pages/index/index" }), 1500);
+              const userInfo = res.data;
+              common_vendor.index.setStorageSync("userInfo", userInfo);
+              common_vendor.index.showToast({ title: "Login Success" });
+              setTimeout(() => {
+                if (userInfo.role === "ADMIN") {
+                  common_vendor.index.reLaunch({
+                    url: "/pages/admin index/admin index"
+                  });
+                } else {
+                  common_vendor.index.switchTab({
+                    url: "/pages/index/index"
+                  });
+                }
+              }, 1500);
             }
           } else {
-            common_vendor.index.showToast({ title: "Failed", icon: "none" });
+            common_vendor.index.showToast({
+              title: res.data || "Operation Failed",
+              icon: "none"
+            });
           }
+        },
+        fail: () => {
+          common_vendor.index.showToast({ title: "Server Error", icon: "none" });
         }
       });
     }
@@ -68,8 +93,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   } : {}, {
     n: common_vendor.t($data.isRegister ? "Register" : "Log in"),
     o: common_vendor.o((...args) => $options.handleSubmit && $options.handleSubmit(...args)),
-    p: common_vendor.t($data.isRegister ? "Click to log in" : "Click to register"),
-    q: common_vendor.o(($event) => $data.isRegister = !$data.isRegister)
+    p: common_vendor.t($data.isRegister ? "Already have an account? Click to log in" : "No account? Click to register"),
+    q: common_vendor.o((...args) => $options.toggleMode && $options.toggleMode(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

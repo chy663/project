@@ -36,7 +36,7 @@ const _sfc_main = {
   methods: {
     fetchRoomDetail() {
       common_vendor.index.request({
-        url: `http://localhost:8089/api/hotels/${this.hotelId}/rooms`,
+        url: `http://localhost:8089/api/rooms/hotel/${this.hotelId}`,
         method: "GET",
         success: (res) => {
           const currentRoom = res.data.find((item) => item.id == this.roomId);

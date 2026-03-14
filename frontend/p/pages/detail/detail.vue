@@ -116,7 +116,7 @@ export default {
 		},
 		fetchRoomData() {
 			uni.request({
-				url: `http://localhost:8089/api/hotels/${this.hotelId}/rooms`,
+				url: `http://localhost:8089/api/rooms/hotel/${this.hotelId}`,
 				method: 'GET',
 				success: (res) => {
 					this.roomList = res.data;

@@ -1,0 +1,65 @@
+
+.container.data-v-d9cb30bc { padding: 20rpx; background-color: #f5f5f5; min-height: 100vh;
+}
+.hotel-header.data-v-d9cb30bc { background: #fff; border-radius: 15rpx; overflow: hidden; margin-bottom: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+}
+.hotel-image.data-v-d9cb30bc { width: 100%; height: 350rpx;
+}
+.hotel-info.data-v-d9cb30bc { padding: 20rpx;
+}
+.hotel-name.data-v-d9cb30bc { font-size: 36rpx; font-weight: bold; color: #333;
+}
+.section-title.data-v-d9cb30bc { font-size: 32rpx; font-weight: bold; margin: 30rpx 10rpx 20rpx; color: #4c6ef5;
+}
+.room-list.data-v-d9cb30bc { background: #fff; border-radius: 15rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+}
+.room-item.data-v-d9cb30bc { display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 30rpx; border-bottom: 1rpx solid #f0f0f0;
+}
+.room-thumbnail.data-v-d9cb30bc { width: 160rpx; height: 160rpx; border-radius: 12rpx; margin-right: 20rpx; flex-shrink: 0;
+}
+.room-details.data-v-d9cb30bc { flex: 1; display: flex; flex-direction: column; align-items: flex-start;
+}
+.room-title-row.data-v-d9cb30bc { display: flex; flex-direction: row; align-items: center; margin-bottom: 12rpx; width: 100%;
+}
+.name-container.data-v-d9cb30bc { flex: 0 0 180rpx; margin-right: 15rpx;
+}
+.room-type.data-v-d9cb30bc { font-size: 28rpx; font-weight: bold; color: #333;
+}
+.room-inventory.data-v-d9cb30bc { font-size: 20rpx; padding: 4rpx 10rpx; border-radius: 6rpx; white-space: nowrap;
+}
+.stock-green.data-v-d9cb30bc { color: #28a745; background: #eafaf1;
+}
+.stock-red.data-v-d9cb30bc { color: #ff4d4f; background: #fff1f0;
+}
+.room-price.data-v-d9cb30bc { font-size: 28rpx; color: #000; font-weight: bold; margin-bottom: 8rpx;
+}
+.room-max.data-v-d9cb30bc { font-size: 22rpx; color: #999;
+}
+
+/* Edit Button Style: Blue for Admin Actions */
+.edit-button.data-v-d9cb30bc { 
+	background-color: #4c6ef5; 
+	color: white; 
+	font-size: 24rpx; 
+	width: 120rpx; 
+	height: 60rpx; 
+	line-height: 60rpx; 
+	border-radius: 30rpx; 
+	display: flex; 
+	justify-content: center; 
+	align-items: center;
+}
+.tabbar-placeholder.data-v-d9cb30bc { height: 120rpx;
+}
+
+/* Dark Mode Support */
+.dark-mode.data-v-d9cb30bc { background-color: #1a1a1a !important;
+}
+.dark-mode .hotel-header.data-v-d9cb30bc, .dark-mode .room-list.data-v-d9cb30bc { background-color: #2c2c2c !important;
+}
+.dark-mode .hotel-name.data-v-d9cb30bc, .dark-mode .room-type.data-v-d9cb30bc, .dark-mode .room-price.data-v-d9cb30bc { color: #e0e0e0 !important;
+}
+.dark-mode .room-item.data-v-d9cb30bc { border-bottom-color: #3d3d3d !important;
+}
+.dark-mode .room-max.data-v-d9cb30bc { color: #888 !important;
+}

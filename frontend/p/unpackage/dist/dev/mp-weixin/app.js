@@ -12,16 +12,36 @@ if (!Math) {
   "./pages/guestList/guestList.js";
   "./pages/systemsetting/systemsetting.js";
   "./pages/accountsetting/accountsetting.js";
+  "./pages/admin index/admin index.js";
+  "./pages/admin mine/admin mine.js";
+  "./pages/admin detail/admin detail.js";
+  "./pages/admin edit/admin edit.js";
 }
 const _sfc_main = {
   onLaunch: function() {
     common_vendor.index.__f__("log", "at App.vue:4", "App Launch");
+    const userInfo = common_vendor.index.getStorageSync("userInfo");
+    if (userInfo) {
+      if (userInfo.role === "Admin") {
+        common_vendor.index.reLaunch({
+          url: "/pages/admin index/admin index"
+        });
+      } else {
+        common_vendor.index.reLaunch({
+          url: "/pages/index/index"
+        });
+      }
+    } else {
+      common_vendor.index.reLaunch({
+        url: "/pages/login/login"
+      });
+    }
   },
   onShow: function() {
-    common_vendor.index.__f__("log", "at App.vue:7", "App Show");
+    common_vendor.index.__f__("log", "at App.vue:28", "App Show");
   },
   onHide: function() {
-    common_vendor.index.__f__("log", "at App.vue:10", "App Hide");
+    common_vendor.index.__f__("log", "at App.vue:31", "App Hide");
   }
 };
 function createApp() {

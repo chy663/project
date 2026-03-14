@@ -57,7 +57,7 @@
 		</view>
 
 		<view v-else class="empty-state">
-			<image src="/static/logo.png" mode="aspectFit" class="empty-img"></image>
+			
 			<text>No {{ currentTab.toLowerCase() }} orders found.</text>
 		</view>
 
@@ -115,7 +115,7 @@ export default {
 	methods: {
 		fetchOrders() {
 			uni.request({
-				url: `http://localhost:8089/api/orders?userId=${this.userId}`,
+				url:`http://localhost:8089/api/orders/user/${this.userId}`,
 				method: 'GET',
 				success: (res) => {
 					this.orderList = res.data.reverse();

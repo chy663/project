@@ -1,0 +1,35 @@
+
+.container.data-v-1d801c42 { min-height: 100vh; background-color: #f8f9fb; padding: 40rpx 30rpx;
+}
+.dark-mode.data-v-1d801c42 { background-color: #1a1a1a;
+}
+.edit-card.data-v-1d801c42 { background: #ffffff; border-radius: 32rpx; padding: 40rpx; box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.05);
+}
+.dark-mode .edit-card.data-v-1d801c42 { background: #2c2c2c;
+}
+.header-section.data-v-1d801c42 { margin-bottom: 50rpx;
+}
+.page-title.data-v-1d801c42 { font-size: 44rpx; font-weight: bold; color: #1a1a1a; display: block;
+}
+.room-name-hint.data-v-1d801c42 { font-size: 26rpx; color: #4c6ef5; margin-top: 10rpx;
+}
+.dark-mode .page-title.data-v-1d801c42 { color: #ffffff;
+}
+.form-item.data-v-1d801c42 { margin-bottom: 40rpx;
+}
+.label.data-v-1d801c42 { font-size: 28rpx; color: #666; margin-bottom: 16rpx; display: block;
+}
+.dark-mode .label.data-v-1d801c42 { color: #aaa;
+}
+.input.data-v-1d801c42 { 
+	background: #f1f3f7; border-radius: 16rpx; height: 100rpx; padding: 0 30rpx; 
+	font-size: 32rpx; color: #333;
+}
+.dark-mode .input.data-v-1d801c42 { background: #3d3d3d; color: #fff;
+}
+.btn-group.data-v-1d801c42 { margin-top: 60rpx;
+}
+.save-btn.data-v-1d801c42 { background: #4c6ef5; color: #fff; border-radius: 50rpx; height: 100rpx; line-height: 100rpx; font-weight: bold; margin-bottom: 20rpx;
+}
+.cancel-btn.data-v-1d801c42 { background: transparent; color: #999; border-radius: 50rpx; height: 100rpx; line-height: 100rpx; font-size: 28rpx;
+}

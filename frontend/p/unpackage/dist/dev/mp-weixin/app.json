@@ -9,7 +9,11 @@
     "pages/favorites/favorites",
     "pages/guestList/guestList",
     "pages/systemsetting/systemsetting",
-    "pages/accountsetting/accountsetting"
+    "pages/accountsetting/accountsetting",
+    "pages/admin index/admin index",
+    "pages/admin mine/admin mine",
+    "pages/admin detail/admin detail",
+    "pages/admin edit/admin edit"
   ],
   "window": {
     "navigationBarTextStyle": "black",
