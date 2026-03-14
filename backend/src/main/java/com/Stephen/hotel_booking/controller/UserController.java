@@ -22,7 +22,7 @@ public class UserController {
     private BCryptPasswordEncoder passwordEncoder;
 
     /**
-     * Register: Store the encrypted password using BCrypt
+     * 注册：存储角色信息并加密密码
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
@@ -30,16 +30,21 @@ public class UserController {
             return ResponseEntity.badRequest().body("Username already exists");
         }
 
-        // Encode the plain text password
+        // 如果注册时没有指定角色，默认设为 USER
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("USER");
+        }
+
+        // 加密原始密码
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         User savedUser = userRepository.save(user);
-        savedUser.setPassword(null); // Remove sensitive info before returning
+        savedUser.setPassword(null); // 返回前清空密码，保护隐私
         return ResponseEntity.ok(savedUser);
     }
 
     /**
-     * Login: Compare plain text with database hash using matches method
+     * 登录：验证哈希密码并返回包含 role 的用户信息
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginRequest) {
@@ -47,31 +52,35 @@ public class UserController {
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // Validation: matches(input_plain_text, database_hash)
+            // 验证密码：matches(输入的明文, 数据库中的哈希)
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                user.setPassword(null);
-                return ResponseEntity.ok(user);
+                // 克隆一个对象用于返回，避免影响持久化上下文，或手动置空密码
+                User responseUser = new User();
+                responseUser.setId(user.getId());
+                responseUser.setUsername(user.getUsername());
+                responseUser.setNickname(user.getNickname());
+                responseUser.setRole(user.getRole()); // 确保 role 返回给前端
+                return ResponseEntity.ok(responseUser);
             }
         }
         return ResponseEntity.status(401).body("Invalid username or password");
     }
 
     /**
-     * Update Profile: e.g., changing nickname
+     * 更新个人资料
      */
     @PutMapping("/{id}/profile")
     public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody User userRequest) {
         return userRepository.findById(id).map(user -> {
             user.setNickname(userRequest.getNickname());
             User updated = userRepository.save(user);
-            updated.setPassword(null); // Security: do not return password hash
+            updated.setPassword(null);
             return ResponseEntity.ok(updated);
         }).orElse(ResponseEntity.notFound().build());
     }
 
     /**
-     * Change Password
-     * Parameters: oldPassword, newPassword
+     * 修改密码
      */
     @PutMapping("/{id}/password")
     public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordMap) {
@@ -79,11 +88,9 @@ public class UserController {
         String newPassword = passwordMap.get("newPassword");
 
         return userRepository.findById(id).map(user -> {
-            // 1. Verify if the old password matches the stored hash
             if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
                 return ResponseEntity.status(401).body("Old password incorrect");
             }
-            // 2. Encode the new password and save
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
             return ResponseEntity.ok("Password updated successfully");

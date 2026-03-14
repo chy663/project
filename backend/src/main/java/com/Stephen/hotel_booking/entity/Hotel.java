@@ -26,5 +26,8 @@ public class Hotel {
     private Integer maxCapacity;
 
     @Column(name = "star_rating")
-    private Integer starRating; 
+    private Integer starRating;
+
+    @Column(name = "admin_id")
+    private Long adminId;
 }

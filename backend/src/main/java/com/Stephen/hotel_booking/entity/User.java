@@ -22,8 +22,13 @@ public class User {
 
     private LocalDateTime createTime;
 
+    private String role;
+
     @PrePersist
     protected void onCreate() {
         this.createTime = LocalDateTime.now();
     }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }
