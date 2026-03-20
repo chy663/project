@@ -20,7 +20,7 @@ public class HotelRepositoryTest {
         Hotel hotel = new Hotel();
         hotel.setName("Test Hilton Hotel");
         hotel.setAddress("123 Test Street");
-        hotel.setPrice(888.0);
+        hotel.setPrice("888.00");
         hotel.setStarRating(5);
 
         // 2. Save to database 

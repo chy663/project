@@ -7,6 +7,8 @@ const _sfc_main = {
     return {
       hotelId: null,
       hotelName: "Hotel Details",
+      hotelDescription: "",
+      // 新增：酒店描述字段
       hotelImage: "/static/1.jpg",
       roomList: [],
       isBookModalShow: false,
@@ -24,6 +26,7 @@ const _sfc_main = {
     if (userInfo && userInfo.id) {
       this.currentUserId = userInfo.id;
     }
+    this.fetchHotelDetail();
     this.fetchRoomData();
     this.fetchFavoriteRoomIds();
     common_vendor.index.$on("onGuestSelect", (guest) => {
@@ -35,6 +38,19 @@ const _sfc_main = {
     common_vendor.index.$off("onGuestSelect");
   },
   methods: {
+    // 新增：获取酒店详情方法
+    fetchHotelDetail() {
+      common_vendor.index.request({
+        url: `http://localhost:8089/api/hotels/${this.hotelId}`,
+        method: "GET",
+        success: (res) => {
+          if (res.statusCode === 200 && res.data) {
+            this.hotelName = res.data.name;
+            this.hotelDescription = res.data.description;
+          }
+        }
+      });
+    },
     goToRoomDetail(room) {
       common_vendor.index.navigateTo({
         url: `/pages/roomDetail/roomDetail?id=${room.id}&hotelId=${this.hotelId}`
@@ -61,7 +77,7 @@ const _sfc_main = {
           }
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/detail/detail.vue:138", "Failed to fetch favorite room IDs", err);
+          common_vendor.index.__f__("error", "at pages/detail/detail.vue:158", "Failed to fetch favorite room IDs", err);
           this.favoriteRoomIds = [];
         }
       });
@@ -159,7 +175,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $data.hotelImage,
     b: common_vendor.t($data.hotelName),
-    c: common_vendor.f($data.roomList, (room, index, i0) => {
+    c: common_vendor.t($data.hotelDescription || "No description available."),
+    d: common_vendor.f($data.roomList, (room, index, i0) => {
       return {
         a: $options.getRoomImage(room),
         b: common_vendor.t(room.roomType),
@@ -177,20 +194,20 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         n: common_vendor.o(($event) => $options.goToRoomDetail(room), index)
       };
     }),
-    d: $data.isBookModalShow
+    e: $data.isBookModalShow
   }, $data.isBookModalShow ? {
-    e: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args)),
-    f: $data.guestName,
-    g: common_vendor.o(($event) => $data.guestName = $event.detail.value),
-    h: $data.guestPhone,
-    i: common_vendor.o(($event) => $data.guestPhone = $event.detail.value),
-    j: common_vendor.o(($event) => $data.isBookModalShow = false),
-    k: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args)),
-    l: common_vendor.o(() => {
+    f: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args)),
+    g: $data.guestName,
+    h: common_vendor.o(($event) => $data.guestName = $event.detail.value),
+    i: $data.guestPhone,
+    j: common_vendor.o(($event) => $data.guestPhone = $event.detail.value),
+    k: common_vendor.o(($event) => $data.isBookModalShow = false),
+    l: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args)),
+    m: common_vendor.o(() => {
     }),
-    m: common_vendor.o(($event) => $data.isBookModalShow = false)
+    n: common_vendor.o(($event) => $data.isBookModalShow = false)
   } : {}, {
-    n: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
+    o: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

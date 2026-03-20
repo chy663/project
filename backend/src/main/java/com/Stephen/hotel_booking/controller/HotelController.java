@@ -2,6 +2,7 @@ package com.Stephen.hotel_booking.controller;
 
 import com.Stephen.hotel_booking.entity.Hotel;
 import com.Stephen.hotel_booking.repository.HotelRepository;
+import com.Stephen.hotel_booking.service.HotelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,21 @@ import java.util.List;
 public class HotelController {
 
     @Autowired
+    private HotelService hotelService;
+
+    @Autowired
     private HotelRepository hotelRepository;
+
+    @GetMapping("/init-ai-vectors")
+    public String init() {
+        hotelService.initHotelTags();
+        return "Tags Initialized!";
+    }
+
+    @GetMapping("/ai-search")
+    public List<Hotel> aiSearch(@RequestParam String query) {
+        return hotelService.searchByAiTags(query);
+    }
 
     @GetMapping
     public List<Hotel> getAllHotels() {

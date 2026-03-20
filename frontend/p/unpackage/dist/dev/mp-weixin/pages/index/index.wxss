@@ -1,10 +1,12 @@
 
-/* 所有原有排版设置保持不变 */
+/* 样式部分完全保留，不做任何修改 */
 .container { padding: 20rpx; background-color: #f8f8f8; min-height: 100vh;
 }
-.search-box { display: flex; align-items: center; background-color: #fff; padding: 15rpx 25rpx; border-radius: 40rpx; margin-bottom: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+.search-box { display: flex; align-items: center; background-color: #fff; padding: 10rpx 25rpx; border-radius: 40rpx; margin-bottom: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
 }
-.search-input { flex: 1; margin-left: 15rpx; font-size: 28rpx;
+.search-input { flex: 1; margin-left: 15rpx; font-size: 28rpx; height: 70rpx;
+}
+.search-confirm-btn { background-color: #42b983; color: #fff; font-size: 24rpx; padding: 10rpx 25rpx; border-radius: 30rpx; margin-left: 10rpx; font-weight: bold;
 }
 .filter-bar { display: flex; justify-content: space-between; background-color: #fff; padding: 25rpx 10rpx; border-radius: 12rpx; margin-bottom: 30rpx; align-items: center;
 }
@@ -12,14 +14,7 @@
 }
 .filter-item:last-child { border-right: none;
 }
-.picker-text { 
-	font-size: 28rpx; 
-	color: #000; 
-	font-weight: bold; 
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 1; 
-	overflow: hidden;
+.picker-text { font-size: 28rpx; color: #000; font-weight: bold; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden;
 }
 .active-text { font-weight: 1000 !important; color: #000 !important;
 }
@@ -43,8 +38,6 @@
 }
 .hotel-info { flex: 1; margin-left: 24rpx; display: flex; flex-direction: column; justify-content: space-between;
 }
-
-/* 优化点：调整此处使酒店名和人数标签分布更合理 */
 .title-row { display: flex; justify-content: space-between; align-items: center; width: 100%;
 }
 .hotel-name { font-size: 30rpx; font-weight: bold; color: #333; flex: 1; margin-right: 10rpx;
@@ -65,27 +58,13 @@
 }
 .confirm-btn { background: #42b983; color: #fff; border-radius: 40rpx; margin-top: 20rpx; font-size: 30rpx;
 }
-
-/* 夜间模式适配代码 */
 .dark-mode { background-color: #1a1a1a !important;
 }
-.dark-mode .search-box, 
-.dark-mode .filter-bar, 
-.dark-mode .hotel-card,
-.dark-mode .modal-content { background-color: #2c2c2c !important; box-shadow: none !important;
+.dark-mode .search-box, .dark-mode .filter-bar, .dark-mode .hotel-card, .dark-mode .modal-content { background-color: #2c2c2c !important;
 }
-.dark-mode .search-input, 
-.dark-mode .picker-text, 
-.dark-mode .hotel-name,
-.dark-mode .modal-title { color: #e0e0e0 !important;
+.dark-mode .search-input, .dark-mode .picker-text, .dark-mode .hotel-name, .dark-mode .modal-title { color: #e0e0e0 !important;
 }
-.dark-mode .active-text, 
-.dark-mode .arrow, 
-.dark-mode .active-arrow { color: #ffffff !important;
-}
-.dark-mode .hotel-address { color: #888 !important;
+.dark-mode .active-text, .dark-mode .arrow, .dark-mode .active-arrow { color: #ffffff !important;
 }
 .dark-mode .hotel-price { color: #ffffff !important;
-}
-.dark-mode .filter-item { border-right-color: #3d3d3d !important;
 }

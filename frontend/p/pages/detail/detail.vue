@@ -7,6 +7,11 @@
 			</view>
 		</view>
 
+		<view class="description-section">
+			<view class="section-title">Description</view>
+			<text class="description-content">{{ hotelDescription || 'No description available.' }}</text>
+		</view>
+
 		<view class="room-list">
 			<view v-for="(room, index) in roomList" :key="index" class="room-item" @click="goToRoomDetail(room)">
 				<image class="room-thumbnail" :src="getRoomImage(room)" mode="aspectFill"></image>
@@ -78,6 +83,7 @@ export default {
 		return {
 			hotelId: null,
 			hotelName: 'Hotel Details',
+			hotelDescription: '', // 新增：酒店描述字段
 			hotelImage: '/static/1.jpg',
 			roomList: [],
 			isBookModalShow: false,
@@ -97,6 +103,7 @@ export default {
 			this.currentUserId = userInfo.id;
 		}
 		
+		this.fetchHotelDetail(); // 新增：加载酒店详情（包含描述）
 		this.fetchRoomData();
 		this.fetchFavoriteRoomIds(); 
 		
@@ -109,6 +116,19 @@ export default {
 		uni.$off('onGuestSelect');
 	},
 	methods: {
+		// 新增：获取酒店详情方法
+		fetchHotelDetail() {
+			uni.request({
+				url: `http://localhost:8089/api/hotels/${this.hotelId}`,
+				method: 'GET',
+				success: (res) => {
+					if (res.statusCode === 200 && res.data) {
+						this.hotelName = res.data.name;
+						this.hotelDescription = res.data.description;
+					}
+				}
+			});
+		},
 		goToRoomDetail(room) {
 			uni.navigateTo({
 				url: `/pages/roomDetail/roomDetail?id=${room.id}&hotelId=${this.hotelId}`
@@ -228,6 +248,11 @@ export default {
 .hotel-info { padding: 20rpx; }
 .hotel-name { font-size: 36rpx; font-weight: bold; color: #333; }
 
+/* 新增：Description 样式 */
+.description-section { background-color: #fff; padding: 25rpx; border-radius: 15rpx; margin-bottom: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
+.section-title { font-size: 30rpx; font-weight: bold; color: #333; margin-bottom: 10rpx; }
+.description-content { font-size: 26rpx; color: #666; line-height: 1.5; }
+
 .room-list { background: #fff; border-radius: 15rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
 .room-item { display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 30rpx; border-bottom: 1rpx solid #f0f0f0; }
 
@@ -262,8 +287,9 @@ export default {
 
 /* 夜间模式适配 */
 .dark-mode { background-color: #1a1a1a !important; }
-.dark-mode .hotel-header, .dark-mode .room-list, .dark-mode .modal-content { background-color: #2c2c2c !important; }
-.dark-mode .hotel-name, .dark-mode .room-type, .dark-mode .room-price, .dark-mode .modal-title { color: #e0e0e0 !important; }
+.dark-mode .hotel-header, .dark-mode .room-list, .dark-mode .modal-content, .dark-mode .description-section { background-color: #2c2c2c !important; }
+.dark-mode .hotel-name, .dark-mode .room-type, .dark-mode .room-price, .dark-mode .modal-title, .dark-mode .section-title { color: #e0e0e0 !important; }
+.dark-mode .description-content { color: #bbb !important; }
 .dark-mode .room-item, .dark-mode .input-row { border-bottom-color: #3d3d3d !important; }
 .dark-mode .room-max, .dark-mode .label { color: #888 !important; }
 .dark-mode .uni-input { color: #ffffff !important; }

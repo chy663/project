@@ -30,4 +30,12 @@ public class Hotel {
 
     @Column(name = "admin_id")
     private Long adminId;
+
+    @Column(name = "tags")
+    private String tags;
+
+    @Transient // 表示该字段不映射到数据库表
+    private double searchScore;
+    public double getSearchScore() { return searchScore; }
+    public void setSearchScore(double searchScore) { this.searchScore = searchScore; }
 }
