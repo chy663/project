@@ -9,17 +9,16 @@ public class AiConfig {
     @Value("${spring.ai.openai.api-key}")
     private String apiKey;
 
-    @Value("${spring.ai.openai.embedding.options.model}")
-    private String modelId;
+    @Value("${spring.ai.openai.chat.options.model}")
+    private String chatModelId;
 
-    // 豆包 API V3 标准聊天地址
     public static final String DOUBAO_API_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
 
     public String getApiKey() {
         return apiKey;
     }
 
-    public String getModelId() {
-        return modelId;
+    public String getChatModelId() {
+        return chatModelId;
     }
 }

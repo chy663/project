@@ -80,10 +80,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     })
   } : {}, {
     d: $data.newName,
-    e: common_vendor.o(($event) => $data.newName = $event.detail.value),
+    e: common_vendor.o(($event) => $data.newName = $event.detail.value, "47"),
     f: $data.newPhone,
-    g: common_vendor.o(($event) => $data.newPhone = $event.detail.value),
-    h: common_vendor.o((...args) => $options.addGuest && $options.addGuest(...args)),
+    g: common_vendor.o(($event) => $data.newPhone = $event.detail.value, "f6"),
+    h: common_vendor.o((...args) => $options.addGuest && $options.addGuest(...args), "84"),
     i: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });
 }

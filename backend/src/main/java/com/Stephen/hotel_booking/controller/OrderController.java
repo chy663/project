@@ -34,6 +34,7 @@ public class OrderController {
     @PostMapping("/book")
     @Transactional
     public ResponseEntity<?> createOrder(@RequestBody Order bookingRequest) {
+        System.out.println("Booking Request Content: " + bookingRequest.toString());
         // 获取房间详情
         Room room = roomRepository.findById(bookingRequest.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));

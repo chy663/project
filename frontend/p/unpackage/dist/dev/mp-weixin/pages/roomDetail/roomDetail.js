@@ -64,14 +64,26 @@ const _sfc_main = {
     getRoomImages(room) {
       let mainImg = "/static/logo.png";
       const rt = room.roomType;
-      if (rt.includes("Business"))
+      if (rt.includes("King"))
         mainImg = "/static/1-11.jpg";
-      else if (rt.includes("Queen"))
-        mainImg = "/static/2-11.jpg";
-      else if (rt.includes("Family"))
-        mainImg = "/static/3-11.jpg";
-      else if (rt.includes("Work-friendly"))
+      else if (rt.includes("Business"))
         mainImg = "/static/1-22.jpg";
+      else if (rt.includes("Family"))
+        mainImg = "/static/2-11.jpg";
+      else if (rt.includes("Deluxe"))
+        mainImg = "/static/2-22.jpg";
+      else if (rt.includes("Neon"))
+        mainImg = "/static/3-11.jpg";
+      else if (rt.includes("Velvet"))
+        mainImg = "/static/3-22.jpg";
+      else if (rt.includes("One"))
+        mainImg = "/static/4-22jpg";
+      else if (rt.includes("Studio"))
+        mainImg = "/static/4-11.jpg";
+      else if (rt.includes("4"))
+        mainImg = "/static/5-11.jpg";
+      else if (rt.includes("Double"))
+        mainImg = "/static/5-22.jpg";
       return [mainImg, mainImg, mainImg];
     },
     openBookModal() {
@@ -145,19 +157,19 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     m: common_vendor.t($data.roomInfo.totalInventory > 0 ? "Book Now" : "Full"),
     n: $data.roomInfo.totalInventory <= 0 ? 1 : "",
     o: $data.roomInfo.totalInventory <= 0,
-    p: common_vendor.o((...args) => $options.openBookModal && $options.openBookModal(...args)),
+    p: common_vendor.o((...args) => $options.openBookModal && $options.openBookModal(...args), "0e"),
     q: $data.isBookModalShow
   }, $data.isBookModalShow ? {
-    r: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args)),
+    r: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args), "39"),
     s: $data.guestName,
-    t: common_vendor.o(($event) => $data.guestName = $event.detail.value),
+    t: common_vendor.o(($event) => $data.guestName = $event.detail.value, "18"),
     v: $data.guestPhone,
-    w: common_vendor.o(($event) => $data.guestPhone = $event.detail.value),
-    x: common_vendor.o(($event) => $data.isBookModalShow = false),
-    y: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args)),
+    w: common_vendor.o(($event) => $data.guestPhone = $event.detail.value, "50"),
+    x: common_vendor.o(($event) => $data.isBookModalShow = false, "5f"),
+    y: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args), "38"),
     z: common_vendor.o(() => {
-    }),
-    A: common_vendor.o(($event) => $data.isBookModalShow = false)
+    }, "ea"),
+    A: common_vendor.o(($event) => $data.isBookModalShow = false, "85")
   } : {}, {
     B: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });

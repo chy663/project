@@ -157,10 +157,16 @@ export default {
 		getRoomImages(room) {
 			let mainImg = '/static/logo.png';
 			const rt = room.roomType;
-			if (rt.includes('Business')) mainImg = '/static/1-11.jpg'; 
-			else if (rt.includes('Queen')) mainImg = '/static/2-11.jpg';
-			else if (rt.includes('Family')) mainImg = '/static/3-11.jpg';
-			else if (rt.includes('Work-friendly')) mainImg = '/static/1-22.jpg';
+			if (rt.includes('King')) mainImg = '/static/1-11.jpg'; 
+			else if (rt.includes('Business')) mainImg = '/static/1-22.jpg'; 
+			else if (rt.includes('Family')) mainImg = '/static/2-11.jpg';
+			else if (rt.includes('Deluxe')) mainImg = '/static/2-22.jpg';
+			else if (rt.includes('Neon')) mainImg = '/static/3-11.jpg';
+			else if (rt.includes('Velvet')) mainImg = '/static/3-22.jpg';
+			else if (rt.includes('One')) mainImg = '/static/4-22jpg';
+			else if (rt.includes('Studio')) mainImg = '/static/4-11.jpg';
+			else if (rt.includes('4')) mainImg = '/static/5-11.jpg';
+			else if (rt.includes('Double')) mainImg = '/static/5-22.jpg';
 			return [mainImg, mainImg, mainImg];
 		},
 		openBookModal() { this.isBookModalShow = true; },

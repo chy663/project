@@ -49,11 +49,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     b: common_vendor.t($data.userInfo.nickname || $data.userInfo.username || "Please Sign In"),
     c: $data.userInfo.username
   }, $data.userInfo.username ? {} : {}, {
-    d: common_vendor.o(($event) => $options.handleMenuClick("My Favorites")),
-    e: common_vendor.o(($event) => $options.handleMenuClick("Guest Information")),
-    f: common_vendor.o(($event) => $options.handleMenuClick("Account Settings")),
-    g: common_vendor.o(($event) => $options.handleMenuClick("System Settings")),
-    h: common_vendor.o((...args) => $options.handleLogout && $options.handleLogout(...args)),
+    d: common_vendor.o(($event) => $options.handleMenuClick("My Favorites"), "b8"),
+    e: common_vendor.o(($event) => $options.handleMenuClick("Guest Information"), "d0"),
+    f: common_vendor.o(($event) => $options.handleMenuClick("Account Settings"), "f9"),
+    g: common_vendor.o(($event) => $options.handleMenuClick("System Settings"), "ab"),
+    h: common_vendor.o((...args) => $options.handleLogout && $options.handleLogout(...args), "8e"),
     i: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });
 }

@@ -40,13 +40,13 @@ const _sfc_main = {
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
     a: common_vendor.t($data.themeOptions[$data.themeIndex]),
-    b: common_vendor.o((...args) => $options.onThemeChange && $options.onThemeChange(...args)),
+    b: common_vendor.o((...args) => $options.onThemeChange && $options.onThemeChange(...args), "09"),
     c: $data.themeIndex,
     d: $data.themeOptions,
     e: common_vendor.t($data.currentVersion),
-    f: common_vendor.o((...args) => $options.checkUpdate && $options.checkUpdate(...args)),
-    g: common_vendor.o(($event) => $options.handlePolicyClick("Privacy Policy")),
-    h: common_vendor.o(($event) => $options.handlePolicyClick("User Agreement")),
+    f: common_vendor.o((...args) => $options.checkUpdate && $options.checkUpdate(...args), "74"),
+    g: common_vendor.o(($event) => $options.handlePolicyClick("Privacy Policy"), "1a"),
+    h: common_vendor.o(($event) => $options.handlePolicyClick("User Agreement"), "8d"),
     i: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   };
 }

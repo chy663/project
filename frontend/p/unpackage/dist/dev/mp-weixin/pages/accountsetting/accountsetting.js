@@ -54,13 +54,13 @@ const _sfc_main = {
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
     a: $data.nickname,
-    b: common_vendor.o(($event) => $data.nickname = $event.detail.value),
-    c: common_vendor.o((...args) => $options.handleUpdateProfile && $options.handleUpdateProfile(...args)),
+    b: common_vendor.o(($event) => $data.nickname = $event.detail.value, "88"),
+    c: common_vendor.o((...args) => $options.handleUpdateProfile && $options.handleUpdateProfile(...args), "dc"),
     d: $data.pwdForm.oldPassword,
-    e: common_vendor.o(($event) => $data.pwdForm.oldPassword = $event.detail.value),
+    e: common_vendor.o(($event) => $data.pwdForm.oldPassword = $event.detail.value, "a8"),
     f: $data.pwdForm.newPassword,
-    g: common_vendor.o(($event) => $data.pwdForm.newPassword = $event.detail.value),
-    h: common_vendor.o((...args) => $options.handleChangePassword && $options.handleChangePassword(...args)),
+    g: common_vendor.o(($event) => $data.pwdForm.newPassword = $event.detail.value, "3d"),
+    h: common_vendor.o((...args) => $options.handleChangePassword && $options.handleChangePassword(...args), "48"),
     i: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   };
 }

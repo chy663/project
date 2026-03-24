@@ -68,11 +68,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
     a: common_vendor.t($data.roomForm.roomType),
     b: $data.roomForm.price,
-    c: common_vendor.o(($event) => $data.roomForm.price = $event.detail.value),
+    c: common_vendor.o(($event) => $data.roomForm.price = $event.detail.value, "29"),
     d: $data.roomForm.maxPeople,
-    e: common_vendor.o(($event) => $data.roomForm.maxPeople = $event.detail.value),
-    f: common_vendor.o((...args) => $options.submitUpdate && $options.submitUpdate(...args)),
-    g: common_vendor.o((...args) => $options.goBack && $options.goBack(...args)),
+    e: common_vendor.o(($event) => $data.roomForm.maxPeople = $event.detail.value, "30"),
+    f: common_vendor.o((...args) => $options.submitUpdate && $options.submitUpdate(...args), "64"),
+    g: common_vendor.o((...args) => $options.goBack && $options.goBack(...args), "fa"),
     h: common_vendor.n($data.isDark ? "dark-mode" : "")
   };
 }

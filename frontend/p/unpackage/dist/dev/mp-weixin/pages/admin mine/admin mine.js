@@ -57,10 +57,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     b: common_vendor.t($data.userInfo.nickname || $data.userInfo.username || "Please Sign In"),
     c: $data.userInfo.username
   }, $data.userInfo.username ? {} : {}, {
-    d: common_vendor.o(($event) => $options.handleMenuClick("Account Settings")),
-    e: common_vendor.o(($event) => $options.handleMenuClick("System Settings")),
-    f: common_vendor.o((...args) => $options.handleLogout && $options.handleLogout(...args)),
-    g: common_vendor.o((...args) => $options.goToHome && $options.goToHome(...args)),
+    d: common_vendor.o(($event) => $options.handleMenuClick("Account Settings"), "d5"),
+    e: common_vendor.o(($event) => $options.handleMenuClick("System Settings"), "56"),
+    f: common_vendor.o((...args) => $options.handleLogout && $options.handleLogout(...args), "fa"),
+    g: common_vendor.o((...args) => $options.goToHome && $options.goToHome(...args), "a6"),
     h: common_vendor.n($data.isDark ? "dark-mode" : "")
   });
 }

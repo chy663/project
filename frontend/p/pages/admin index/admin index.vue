@@ -19,7 +19,13 @@
 								<text>{{ myHotel.rating }}</text>
 							</view>
 						</view>
+						
 						<text class="hotel-address">{{ myHotel.address }}</text>
+
+						<view class="price-row">
+							<text class="hotel-price">${{ myHotel.price }}</text>
+						</view>
+						
 						<view class="tag-container">
 							<text class="category-tag">{{ myHotel.category }}</text>
 							<view class="manage-btn">Manage Rooms</view>
@@ -60,17 +66,16 @@
 			}
 		},
 		onShow() {
-		    this.isDark = uni.getStorageSync('isDarkMode') || false;
-		    const userInfo = uni.getStorageSync('userInfo');
+			this.isDark = uni.getStorageSync('isDarkMode') || false;
+			const userInfo = uni.getStorageSync('userInfo');
 		
-		    if (userInfo && userInfo.role && userInfo.role.toLowerCase() === 'admin') {
-		        this.fetchMyHotel(userInfo.id);
-		    } else {
-		        // 如果没有登录或者是普通用户，重定向
-		        uni.reLaunch({ 
-		            url: userInfo ? '/pages/index/index' : '/pages/login/login' 
-		        });
-		    }
+			if (userInfo && userInfo.role && userInfo.role.toLowerCase() === 'admin') {
+				this.fetchMyHotel(userInfo.id);
+			} else {
+				uni.reLaunch({ 
+					url: userInfo ? '/pages/index/index' : '/pages/login/login' 
+				});
+			}
 		},
 		methods: {
 			fetchMyHotel(userId) {
@@ -78,6 +83,7 @@
 					url: `http://localhost:8089/api/hotels/admin/${userId}`,
 					success: (res) => {
 						if (res.statusCode === 200) {
+							// 这里的 res.data.price 已经是后端计算好的 "100 - 200" 格式
 							this.myHotel = res.data;
 						}
 					}
@@ -92,11 +98,11 @@
 				uni.reLaunch({ url: '/pages/admin mine/admin mine' });
 			},
 			getHotelImage(name) {
-				if (name?.includes('Hotel A')) return '/static/1.jpg';
-				if (name?.includes('Hotel B')) return '/static/2.jpg';
-				if (name?.includes('Hotel C')) return '/static/3.jpg';
-				if (name?.includes('Hotel D')) return '/static/4.jpg';
-				if (name?.includes('Hotel E')) return '/static/5.jpg';
+				if (name?.includes('InterContinental')) return '/static/1.jpg';
+				if (name?.includes('Sunny Garden')) return '/static/2.jpg';
+				if (name?.includes('Neon Velvet')) return '/static/3.jpg';
+				if (name?.includes('Heritage')) return '/static/4.jpg';
+				if (name?.includes('Smart Stay')) return '/static/5.jpg';
 				return '/static/logo.png';
 			}
 		}
@@ -108,7 +114,7 @@
 	.container { min-height: 100vh; background-color: #f8f9fb; }
 	.dark-mode { background-color: #1a1a1a; }
 
-	/* Header Styling matching index.vue */
+	/* Header Styling */
 	.header { padding: 100rpx 40rpx 40rpx; background-color: #ffffff; border-bottom-left-radius: 40rpx; border-bottom-right-radius: 40rpx; }
 	.dark-mode .header { background-color: #2c2c2c; }
 	.title { font-size: 52rpx; font-weight: 800; color: #1a1a1a; display: block; }
@@ -126,13 +132,18 @@
 	.dark-mode .hotel-name { color: #ffffff; }
 	.rating { display: flex; align-items: center; color: #ff9500; font-weight: bold; font-size: 28rpx; }
 	.star { margin-right: 6rpx; }
-	.hotel-address { font-size: 26rpx; color: #999; margin: 12rpx 0 24rpx; display: block; }
+	.hotel-address { font-size: 26rpx; color: #999; margin: 12rpx 0 10rpx; display: block; }
 	
+	/* 新增价格样式：加粗并配合间距 */
+	.price-row { margin-bottom: 24rpx; }
+	.hotel-price { font-size: 38rpx; font-weight: 800; color: #1a1a1a; }
+	.dark-mode .hotel-price { color: #ffffff; }
+
 	.tag-container { display: flex; justify-content: space-between; align-items: center; }
 	.category-tag { background: #f0f3ff; color: #4c6ef5; padding: 8rpx 24rpx; border-radius: 12rpx; font-size: 24rpx; font-weight: 600; }
 	.manage-btn { font-size: 28rpx; color: #4c6ef5; font-weight: bold; border-bottom: 2rpx solid #4c6ef5; }
 
-	/* Custom Tabbar mirroring index.vue native-like look */
+	/* Tabbar */
 	.tabbar-placeholder { height: 120rpx; }
 	.tabbar {
 		position: fixed; bottom: 0; left: 0; right: 0; height: 110rpx;
@@ -145,7 +156,6 @@
 	.tab-icon { font-size: 44rpx; }
 	.tab-label { font-size: 22rpx; color: #bfbfbf; margin-top: 4rpx; }
 	.tab-item.active .tab-label { color: #4c6ef5; font-weight: bold; }
-	.tab-item.active .tab-icon { filter: drop-shadow(0 0 5rpx rgba(76, 110, 245, 0.3)); }
 
 	.empty-state { text-align: center; padding-top: 200rpx; color: #999; font-size: 28rpx; }
 </style>

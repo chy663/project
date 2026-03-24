@@ -155,12 +155,12 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     f: $data.isReviewModalShow
   }, $data.isReviewModalShow ? {
     g: $data.reviewContent,
-    h: common_vendor.o(($event) => $data.reviewContent = $event.detail.value),
-    i: common_vendor.o(($event) => $data.isReviewModalShow = false),
-    j: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args)),
+    h: common_vendor.o(($event) => $data.reviewContent = $event.detail.value, "d8"),
+    i: common_vendor.o(($event) => $data.isReviewModalShow = false, "75"),
+    j: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args), "fe"),
     k: common_vendor.o(() => {
-    }),
-    l: common_vendor.o(($event) => $data.isReviewModalShow = false)
+    }, "f5"),
+    l: common_vendor.o(($event) => $data.isReviewModalShow = false, "6a")
   } : {}, {
     m: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });

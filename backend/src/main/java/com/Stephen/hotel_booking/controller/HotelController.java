@@ -33,21 +33,25 @@ public class HotelController {
 
     @GetMapping
     public List<Hotel> getAllHotels() {
-        return hotelRepository.findAll();
+        // 调用 Service 层带价格处理的方法
+        return hotelService.getAllHotels();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Hotel> getHotelById(@PathVariable Long id) {
         return hotelRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(hotel -> ResponseEntity.ok(hotelService.processPriceRanges(hotel)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 新增：通过管理员ID获取酒店的接口
     @GetMapping("/admin/{adminId}")
     public ResponseEntity<Hotel> getHotelByAdmin(@PathVariable Long adminId) {
         return hotelRepository.findByAdminId(adminId)
-                .map(ResponseEntity::ok)
+                .map(hotel -> {
+                    // 关键：在返回管理员端前处理动态价格并保存
+                    Hotel processedHotel = hotelService.processPriceRanges(hotel);
+                    return ResponseEntity.ok(processedHotel);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 }

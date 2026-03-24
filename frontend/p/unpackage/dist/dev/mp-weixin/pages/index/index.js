@@ -10,10 +10,19 @@ const _sfc_main = {
       searchKeyword: "",
       sortOptions: ["Default", "Price: Low to High", "Price: High to Low", "Star: High to Low", "Star: Low to High"],
       sortDisplayOptions: ["Default", "Price ↑", "Price ↓", "Star ↓", "Star ↑"],
-      locationOptions: ["All Regions", "Street 1", "Street 2", "Street 3", "Street 4", "Street 5"],
+      // Key Change: Map display labels to actual database values
+      locationOptions: [
+        { label: "All Regions", value: "" },
+        { label: "Center Financial Place", value: "Beijing CBD" },
+        { label: "Fashionable Streets", value: "Sanlitun" },
+        { label: "Beautiful Old Town", value: "Gubei Water Town" },
+        { label: "Science Park", value: "Wangjing Science and Technology Park" },
+        { label: "Old Town", value: "Houhai Old Town" }
+      ],
       sortIndex: 0,
       locationIndex: 0,
-      selectedLocation: "",
+      selectedLocationValue: "",
+      // Store the mapping value here
       isRoomPickerShow: false,
       personCount: 1,
       roomInfoText: ""
@@ -33,7 +42,6 @@ const _sfc_main = {
         }
       }
     },
-    // 1. 获取初始数据：改用 AI 搜索接口并传空，确保后端返回全部
     fetchHotelData() {
       common_vendor.index.request({
         url: "http://localhost:8089/api/hotels/ai-search",
@@ -44,14 +52,12 @@ const _sfc_main = {
             this.hotelList = res.data;
             this.applyFilters();
           } else {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:142", "Fetch Data Failed:", res.data);
             this.hotelList = [];
             this.applyFilters();
           }
         }
       });
     },
-    // 2. AI 搜索：搜索结果存入 hotelList 并触发统一过滤
     handleAiSearch() {
       const query = this.searchKeyword.trim();
       if (!query) {
@@ -73,19 +79,17 @@ const _sfc_main = {
           }
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:171", "搜索失败:", err);
-          common_vendor.index.showToast({ title: "网络异常", icon: "none" });
+          common_vendor.index.showToast({ title: "Network Error", icon: "none" });
         },
         complete: () => {
           common_vendor.index.hideLoading();
         }
       });
     },
-    // 3. 核心过滤器：增加了对 hotelList 的类型保护
     applyFilters() {
       let list = Array.isArray(this.hotelList) ? [...this.hotelList] : [];
-      if (this.selectedLocation && this.selectedLocation !== "All Regions") {
-        list = list.filter((h) => h.address && h.address.includes(this.selectedLocation));
+      if (this.selectedLocationValue) {
+        list = list.filter((h) => h.address && h.address.includes(this.selectedLocationValue));
       }
       if (this.personCount > 0) {
         list = list.filter((h) => (h.maxCapacity || 0) >= this.personCount);
@@ -110,7 +114,7 @@ const _sfc_main = {
     getMinPrice(priceStr) {
       if (typeof priceStr === "number")
         return priceStr;
-      if (!priceStr)
+      if (!priceStr || priceStr === "N/A")
         return 0;
       const match = String(priceStr).match(/\d+/);
       return match ? parseFloat(match[0]) : 0;
@@ -121,7 +125,7 @@ const _sfc_main = {
     },
     onLocationChange(e) {
       this.locationIndex = parseInt(e.detail.value);
-      this.selectedLocation = this.locationIndex > 0 ? this.locationOptions[this.locationIndex] : "";
+      this.selectedLocationValue = this.locationOptions[this.locationIndex].value;
       this.applyFilters();
     },
     showRoomPicker() {
@@ -134,24 +138,24 @@ const _sfc_main = {
     },
     handleGetLocation() {
       this.locationIndex = 1;
-      this.selectedLocation = "Street 1";
+      this.selectedLocationValue = this.locationOptions[1].value;
       this.applyFilters();
-      common_vendor.index.showToast({ title: "Located: Street 1", icon: "none" });
+      common_vendor.index.showToast({ title: `Located: ${this.locationOptions[1].label}`, icon: "none" });
     },
     goToDetail(hotelId) {
       common_vendor.index.navigateTo({ url: `/pages/detail/detail?id=${hotelId}` });
     },
     getHotelImages(hotel) {
       const name = hotel.name || "";
-      if (name.includes("Hotel A"))
+      if (name.includes("InterContinental"))
         return ["/static/1.jpg", "/static/1-1.jpg", "/static/1-2.jpg"];
-      if (name.includes("Hotel B"))
+      if (name.includes("Sunny Garden"))
         return ["/static/2.jpg", "/static/2-1.jpg", "/static/2-2.jpg"];
-      if (name.includes("Hotel C"))
+      if (name.includes("Neon Velvet"))
         return ["/static/3.jpg", "/static/3-1.jpg", "/static/3-2.jpg"];
-      if (name.includes("Hotel D"))
+      if (name.includes("Heritage"))
         return ["/static/4.jpg", "/static/4-1.jpg", "/static/4-2.jpg"];
-      if (name.includes("Hotel E"))
+      if (name.includes("Smart Stay"))
         return ["/static/5.jpg", "/static/5-1.jpg", "/static/5-2.jpg"];
       return ["/static/logo.png"];
     }
@@ -159,21 +163,21 @@ const _sfc_main = {
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.o((...args) => $options.handleAiSearch && $options.handleAiSearch(...args)),
+    a: common_vendor.o((...args) => $options.handleAiSearch && $options.handleAiSearch(...args), "71"),
     b: $data.searchKeyword,
-    c: common_vendor.o(($event) => $data.searchKeyword = $event.detail.value),
-    d: common_vendor.o((...args) => $options.handleAiSearch && $options.handleAiSearch(...args)),
+    c: common_vendor.o(($event) => $data.searchKeyword = $event.detail.value, "0e"),
+    d: common_vendor.o((...args) => $options.handleAiSearch && $options.handleAiSearch(...args), "f7"),
     e: common_vendor.t($data.sortDisplayOptions[$data.sortIndex]),
-    f: common_vendor.o((...args) => $options.onSortChange && $options.onSortChange(...args)),
+    f: common_vendor.o((...args) => $options.onSortChange && $options.onSortChange(...args), "5a"),
     g: $data.sortIndex,
     h: $data.sortOptions,
-    i: common_vendor.t($data.locationOptions[$data.locationIndex]),
-    j: common_vendor.o((...args) => $options.onLocationChange && $options.onLocationChange(...args)),
+    i: common_vendor.t($data.locationOptions[$data.locationIndex].label),
+    j: common_vendor.o((...args) => $options.onLocationChange && $options.onLocationChange(...args), "be"),
     k: $data.locationIndex,
     l: $data.locationOptions,
-    m: common_vendor.o((...args) => $options.handleGetLocation && $options.handleGetLocation(...args)),
+    m: common_vendor.o((...args) => $options.handleGetLocation && $options.handleGetLocation(...args), "d7"),
     n: common_vendor.t($data.roomInfoText || "Guests"),
-    o: common_vendor.o((...args) => $options.showRoomPicker && $options.showRoomPicker(...args)),
+    o: common_vendor.o((...args) => $options.showRoomPicker && $options.showRoomPicker(...args), "48"),
     p: common_vendor.f($data.filteredHotelList, (hotel, k0, i0) => {
       return common_vendor.e({
         a: common_vendor.f($options.getHotelImages(hotel), (img, index, i1) => {
@@ -199,11 +203,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     q: $data.isRoomPickerShow
   }, $data.isRoomPickerShow ? {
     r: $data.personCount,
-    s: common_vendor.o(($event) => $data.personCount = $event.detail.value),
-    t: common_vendor.o((...args) => $options.confirmRoomInfo && $options.confirmRoomInfo(...args)),
+    s: common_vendor.o(($event) => $data.personCount = $event.detail.value, "4b"),
+    t: common_vendor.o((...args) => $options.confirmRoomInfo && $options.confirmRoomInfo(...args), "b1"),
     v: common_vendor.o(() => {
-    }),
-    w: common_vendor.o(($event) => $data.isRoomPickerShow = false)
+    }, "fd"),
+    w: common_vendor.o(($event) => $data.isRoomPickerShow = false, "92")
   } : {}, {
     x: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });

@@ -50,30 +50,26 @@ const _sfc_main = {
       if (!room || !room.roomType)
         return "/static/logo.png";
       const rt = room.roomType;
-      if (rt.includes("Business"))
+      if (rt.includes("King"))
         return "/static/1-11.jpg";
-      if (rt.includes("Work-friendly"))
+      if (rt.includes("Business"))
         return "/static/1-22.jpg";
-      if (rt.includes("Queen"))
-        return "/static/2-11.jpg";
-      if (rt.includes("Romantic"))
-        return "/static/2-22.jpg";
-      if (rt.includes("Designer"))
-        return "/static/2-33.jpg";
       if (rt.includes("Family"))
+        return "/static/2-11.jpg";
+      if (rt.includes("Deluxe"))
+        return "/static/2-22.jpg";
+      if (rt.includes("Neon"))
         return "/static/3-11.jpg";
-      if (rt.includes("Child"))
+      if (rt.includes("Velvet"))
         return "/static/3-22.jpg";
-      if (rt.includes("Studio"))
+      if (rt.includes("One"))
         return "/static/4-11.jpg";
-      if (rt.includes("Space"))
+      if (rt.includes("Studio"))
         return "/static/4-22.jpg";
-      if (rt.includes("Budget"))
+      if (rt.includes("4"))
         return "/static/5-11.jpg";
-      if (rt.includes("Bunk"))
+      if (rt.includes("Double"))
         return "/static/5-22.jpg";
-      if (rt.includes("Student"))
-        return "/static/5-33.jpg";
       return "/static/logo.png";
     }
   }

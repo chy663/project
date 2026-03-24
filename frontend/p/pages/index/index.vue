@@ -22,9 +22,15 @@
 			</picker>
 
 			<view class="filter-item location-wrapper">
-				<picker @change="onLocationChange" :value="locationIndex" :range="locationOptions" class="picker-main">
+				<picker 
+					@change="onLocationChange" 
+					:value="locationIndex" 
+					:range="locationOptions" 
+					range-key="label"
+					class="picker-main"
+				>
 					<view class="picker-text active-text">
-						{{ locationOptions[locationIndex] }}
+						{{ locationOptions[locationIndex].label }}
 						<text class="arrow active-arrow">▼</text>
 					</view>
 				</picker>
@@ -67,7 +73,7 @@
 				<view class="name-address-box">
 					<view class="title-row">
 						<text class="hotel-name">{{ hotel.name }}</text>
-						<text class="capacity-tag" v-if="hotel.capacity">{{ hotel.capacity }} Persons</text>
+						<text class="capacity-tag" v-if="hotel.capacity">{{ hotel.capacity }}</text>
 					</view>
 					<text class="hotel-address">{{ hotel.address }}</text>
 				</view>
@@ -105,10 +111,18 @@ export default {
 			searchKeyword: '',
 			sortOptions: ['Default', 'Price: Low to High', 'Price: High to Low', 'Star: High to Low', 'Star: Low to High'],
 			sortDisplayOptions: ['Default', 'Price ↑', 'Price ↓', 'Star ↓', 'Star ↑'],
-			locationOptions: ['All Regions', 'Street 1', 'Street 2', 'Street 3', 'Street 4', 'Street 5'],
+			// Key Change: Map display labels to actual database values
+			locationOptions: [
+				{ label: 'All Regions', value: '' },
+				{ label: 'Center Financial Place', value: 'Beijing CBD' },
+				{ label: 'Fashionable Streets', value: 'Sanlitun' },
+				{ label: 'Beautiful Old Town', value: 'Gubei Water Town' },
+				{ label: 'Science Park', value: 'Wangjing Science and Technology Park' },
+				{ label: 'Old Town', value: 'Houhai Old Town' }
+			],
 			sortIndex: 0, 
 			locationIndex: 0,
-			selectedLocation: '',
+			selectedLocationValue: '', // Store the mapping value here
 			isRoomPickerShow: false,
 			personCount: 1,
 			roomInfoText: ''
@@ -128,7 +142,6 @@ export default {
 				}
 			}
 		},
-		// 1. 获取初始数据：改用 AI 搜索接口并传空，确保后端返回全部
 		fetchHotelData() {
 			uni.request({
 				url: 'http://localhost:8089/api/hotels/ai-search',
@@ -139,14 +152,12 @@ export default {
 						this.hotelList = res.data;
 						this.applyFilters();
 					} else {
-						console.error("Fetch Data Failed:", res.data);
 						this.hotelList = [];
 						this.applyFilters();
 					}
 				}
 			});
 		},
-		// 2. AI 搜索：搜索结果存入 hotelList 并触发统一过滤
 		handleAiSearch() {
 			const query = this.searchKeyword.trim();
 			if (!query) {
@@ -168,51 +179,55 @@ export default {
 					}
 				},
 				fail: (err) => {
-					console.error("搜索失败:", err);
-					uni.showToast({ title: '网络异常', icon: 'none' });
+					uni.showToast({ title: 'Network Error', icon: 'none' });
 				},
 				complete: () => {
 					uni.hideLoading();
 				}
 			});
 		},
-		// 3. 核心过滤器：增加了对 hotelList 的类型保护
 		applyFilters() {
-			// 修复报错的关键：确保 list 永远是一个数组，即便 hotelList 是 null
 			let list = Array.isArray(this.hotelList) ? [...this.hotelList] : [];
 			
-			if (this.selectedLocation && this.selectedLocation !== 'All Regions') {
-				list = list.filter(h => h.address && h.address.includes(this.selectedLocation));
+			// Use the hidden value for filtering
+			if (this.selectedLocationValue) {
+				list = list.filter(h => h.address && h.address.includes(this.selectedLocationValue));
 			}
+			
 			if (this.personCount > 0) {
 				list = list.filter(h => (h.maxCapacity || 0) >= this.personCount);
 			}
 			this.filteredHotelList = this.applySort(list);
 		},
 		applySort(list) {
-			const index = this.sortIndex;
-			// 复制一份进行排序
-			let sortedList = [...list];
-			if (index === 0) sortedList.sort((a, b) => a.id - b.id);
-			else if (index === 1) sortedList.sort((a, b) => this.getMinPrice(a.price) - this.getMinPrice(b.price));
-			else if (index === 2) sortedList.sort((a, b) => this.getMinPrice(b.price) - this.getMinPrice(a.price));
-			else if (index === 3) sortedList.sort((a, b) => b.starRating - a.starRating);
-			else if (index === 4) sortedList.sort((a, b) => a.starRating - b.starRating);
-			return sortedList;
+		    const index = this.sortIndex;
+		    let sortedList = [...list];
+		    // 根据解析出的最小价格进行排序
+		    if (index === 0) sortedList.sort((a, b) => a.id - b.id);
+		    else if (index === 1) sortedList.sort((a, b) => this.getMinPrice(a.price) - this.getMinPrice(b.price));
+		    else if (index === 2) sortedList.sort((a, b) => this.getMinPrice(b.price) - this.getMinPrice(a.price));
+		    else if (index === 3) sortedList.sort((a, b) => b.starRating - a.starRating);
+		    else if (index === 4) sortedList.sort((a, b) => a.starRating - b.starRating);
+		    return sortedList;
 		},
+		
 		getMinPrice(priceStr) {
-			if (typeof priceStr === 'number') return priceStr;
-			if (!priceStr) return 0;
-			const match = String(priceStr).match(/\d+/);
-			return match ? parseFloat(match[0]) : 0;
+		    if (typeof priceStr === 'number') return priceStr;
+		    if (!priceStr || priceStr === 'N/A') return 0;
+		    
+		    // 提取字符串中的第一个数字作为排序基准（例如 "100 - 200" 提取 100）
+		    const match = String(priceStr).match(/\d+/);
+		    return match ? parseFloat(match[0]) : 0;
 		},
+		
 		onSortChange(e) {
 			this.sortIndex = parseInt(e.detail.value);
 			this.applyFilters();
 		},
 		onLocationChange(e) {
 			this.locationIndex = parseInt(e.detail.value);
-			this.selectedLocation = this.locationIndex > 0 ? this.locationOptions[this.locationIndex] : '';
+			// Update the internal value using the selected index
+			this.selectedLocationValue = this.locationOptions[this.locationIndex].value;
 			this.applyFilters();
 		},
 		showRoomPicker() { this.isRoomPickerShow = true; },
@@ -222,21 +237,22 @@ export default {
 			this.applyFilters();
 		},
 		handleGetLocation() {
+			// Find the index for Street 1 and set its value
 			this.locationIndex = 1; 
-			this.selectedLocation = 'Street 1';
+			this.selectedLocationValue = this.locationOptions[1].value;
 			this.applyFilters();
-			uni.showToast({ title: 'Located: Street 1', icon: 'none' });
+			uni.showToast({ title: `Located: ${this.locationOptions[1].label}`, icon: 'none' });
 		},
 		goToDetail(hotelId) {
 			uni.navigateTo({ url: `/pages/detail/detail?id=${hotelId}` });
 		},
 		getHotelImages(hotel) {
 			const name = hotel.name || '';
-			if (name.includes('Hotel A')) return ['/static/1.jpg', '/static/1-1.jpg', '/static/1-2.jpg'];
-			if (name.includes('Hotel B')) return ['/static/2.jpg', '/static/2-1.jpg', '/static/2-2.jpg'];
-			if (name.includes('Hotel C')) return ['/static/3.jpg', '/static/3-1.jpg', '/static/3-2.jpg'];
-			if (name.includes('Hotel D')) return ['/static/4.jpg', '/static/4-1.jpg', '/static/4-2.jpg'];
-			if (name.includes('Hotel E')) return ['/static/5.jpg', '/static/5-1.jpg', '/static/5-2.jpg'];
+			if (name.includes('InterContinental')) return ['/static/1.jpg', '/static/1-1.jpg', '/static/1-2.jpg'];
+			if (name.includes('Sunny Garden')) return ['/static/2.jpg', '/static/2-1.jpg', '/static/2-2.jpg'];
+			if (name.includes('Neon Velvet')) return ['/static/3.jpg', '/static/3-1.jpg', '/static/3-2.jpg'];
+			if (name.includes('Heritage')) return ['/static/4.jpg', '/static/4-1.jpg', '/static/4-2.jpg'];
+			if (name.includes('Smart Stay')) return ['/static/5.jpg', '/static/5-1.jpg', '/static/5-2.jpg'];
 			return ['/static/logo.png'];
 		}
 	}
@@ -244,7 +260,7 @@ export default {
 </script>
 
 <style>
-/* 样式部分完全保留，不做任何修改 */
+/* Style omitted for brevity as requested - it remains the same */
 .container { padding: 20rpx; background-color: #f8f8f8; min-height: 100vh; }
 .search-box { display: flex; align-items: center; background-color: #fff; padding: 10rpx 25rpx; border-radius: 40rpx; margin-bottom: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .search-input { flex: 1; margin-left: 15rpx; font-size: 28rpx; height: 70rpx; }

@@ -75,26 +75,26 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: common_vendor.t($data.isRegister ? "Register Account" : "Welcome!"),
     b: $data.form.username,
-    c: common_vendor.o(($event) => $data.form.username = $event.detail.value),
+    c: common_vendor.o(($event) => $data.form.username = $event.detail.value, "b2"),
     d: !$data.showPassword
   }, !$data.showPassword ? {
     e: $data.form.password,
-    f: common_vendor.o(($event) => $data.form.password = $event.detail.value)
+    f: common_vendor.o(($event) => $data.form.password = $event.detail.value, "f9")
   } : {
     g: $data.form.password,
-    h: common_vendor.o(($event) => $data.form.password = $event.detail.value)
+    h: common_vendor.o(($event) => $data.form.password = $event.detail.value, "99")
   }, {
     i: $data.showPassword ? "/static/可视密码.png" : "/static/隐藏密码.png",
-    j: common_vendor.o((...args) => $options.handleToggle && $options.handleToggle(...args)),
+    j: common_vendor.o((...args) => $options.handleToggle && $options.handleToggle(...args), "a5"),
     k: $data.isRegister
   }, $data.isRegister ? {
     l: $data.form.nickname,
-    m: common_vendor.o(($event) => $data.form.nickname = $event.detail.value)
+    m: common_vendor.o(($event) => $data.form.nickname = $event.detail.value, "a1")
   } : {}, {
     n: common_vendor.t($data.isRegister ? "Register" : "Log in"),
-    o: common_vendor.o((...args) => $options.handleSubmit && $options.handleSubmit(...args)),
+    o: common_vendor.o((...args) => $options.handleSubmit && $options.handleSubmit(...args), "e2"),
     p: common_vendor.t($data.isRegister ? "Already have an account? Click to log in" : "No account? Click to register"),
-    q: common_vendor.o((...args) => $options.toggleMode && $options.toggleMode(...args))
+    q: common_vendor.o((...args) => $options.toggleMode && $options.toggleMode(...args), "2a")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

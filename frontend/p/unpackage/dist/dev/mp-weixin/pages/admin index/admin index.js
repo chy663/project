@@ -38,15 +38,15 @@ const _sfc_main = {
       common_vendor.index.reLaunch({ url: "/pages/admin mine/admin mine" });
     },
     getHotelImage(name) {
-      if (name == null ? void 0 : name.includes("Hotel A"))
+      if (name == null ? void 0 : name.includes("InterContinental"))
         return "/static/1.jpg";
-      if (name == null ? void 0 : name.includes("Hotel B"))
+      if (name == null ? void 0 : name.includes("Sunny Garden"))
         return "/static/2.jpg";
-      if (name == null ? void 0 : name.includes("Hotel C"))
+      if (name == null ? void 0 : name.includes("Neon Velvet"))
         return "/static/3.jpg";
-      if (name == null ? void 0 : name.includes("Hotel D"))
+      if (name == null ? void 0 : name.includes("Heritage"))
         return "/static/4.jpg";
-      if (name == null ? void 0 : name.includes("Hotel E"))
+      if (name == null ? void 0 : name.includes("Smart Stay"))
         return "/static/5.jpg";
       return "/static/logo.png";
     }
@@ -60,11 +60,12 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     c: common_vendor.t($data.myHotel.name),
     d: common_vendor.t($data.myHotel.rating),
     e: common_vendor.t($data.myHotel.address),
-    f: common_vendor.t($data.myHotel.category),
-    g: common_vendor.o(($event) => $options.goToDetail($data.myHotel.id))
+    f: common_vendor.t($data.myHotel.price),
+    g: common_vendor.t($data.myHotel.category),
+    h: common_vendor.o(($event) => $options.goToDetail($data.myHotel.id), "52")
   } : {}, {
-    h: common_vendor.o((...args) => $options.goToMine && $options.goToMine(...args)),
-    i: common_vendor.n($data.isDark ? "dark-mode" : "")
+    i: common_vendor.o((...args) => $options.goToMine && $options.goToMine(...args), "1f"),
+    j: common_vendor.n($data.isDark ? "dark-mode" : "")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-9ba85480"]]);
