@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "orders") // "order" 通常是数据库保留字，建议使用 "orders"
+@Table(name = "orders")
 @Data
 public class Order {
 
@@ -14,7 +14,7 @@ public class Order {
     private Long id;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId; // 实际项目中应关联 User 对象
+    private Long userId;
 
     @Column(name = "room_id", nullable = false)
     private Long roomId;
@@ -26,7 +26,7 @@ public class Order {
     private Double totalPrice;
 
     @Column(nullable = false)
-    private String status; // 例如: PENDING, CONFIRMED, CANCELLED
+    private String status;
 
     private LocalDateTime createTime;
 
@@ -42,13 +42,15 @@ public class Order {
     @Column(name = "guest_name")
     private String guestName;
 
-    // 新增：入住人电话
     @Column(name = "guest_phone")
     private String guestPhone;
+
+    @Column(name = "ai_guide", columnDefinition = "TEXT")
+    private String aiGuide;
 
     @PrePersist
     protected void onCreate() {
         createTime = LocalDateTime.now();
-        if (status == null) status = "CONFIRMED"; // 模拟支付成功，默认状态为已确认
+        if (status == null) status = "CONFIRMED";
     }
 }

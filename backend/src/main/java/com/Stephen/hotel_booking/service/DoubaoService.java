@@ -79,4 +79,45 @@ public class DoubaoService {
             return "";
         }
     }
+
+    public String generateTravelGuide(String hotelLocation, String hotelDescription, String roomType) {
+        try {
+            String prompt = "You are an expert travel guide. Analyze the following hotel booking information to infer the location and user preferences. " +
+                    "Generate a detailed, step-by-step travel guide for the area surrounding the hotel. " +
+                    "Provide actionable recommendations for attractions, dining, and activities.\n" +
+                    "Hotel Location: " + hotelLocation + "\n" +
+                    "Hotel Description: " + hotelDescription + "\n" +
+                    "Room Type: " + roomType + "\n" +
+                    "Output the guide clearly using formatting, headings, and bullet points in English.";
+
+            Map<String, Object> requestBodyMap = new HashMap<>();
+            requestBodyMap.put("model", aiConfig.getChatModelId());
+
+            List<Map<String, String>> messages = new ArrayList<>();
+            messages.add(Map.of("role", "user", "content", prompt));
+            requestBodyMap.put("messages", messages);
+
+            String jsonPayload = objectMapper.writeValueAsString(requestBodyMap);
+
+            Request request = new Request.Builder()
+                    .url(AiConfig.DOUBAO_API_URL)
+                    .addHeader("Authorization", "Bearer " + aiConfig.getApiKey())
+                    .post(RequestBody.create(jsonPayload, MediaType.parse("application/json")))
+                    .build();
+
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    System.err.println("API Request Failed! Status: " + response.code());
+                    return "Failed to generate travel guide.";
+                }
+
+                String responseBody = response.body().string();
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                return rootNode.path("choices").get(0).path("message").path("content").asText();
+            }
+        } catch (Exception e) {
+            System.err.println("DoubaoService Exception: " + e.getMessage());
+            return "Error generating travel guide.";
+        }
+    }
 }

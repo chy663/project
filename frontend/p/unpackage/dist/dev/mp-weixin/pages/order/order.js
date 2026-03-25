@@ -15,7 +15,11 @@ const _sfc_main = {
       ],
       isReviewModalShow: false,
       reviewContent: "",
-      selectedOrder: null
+      selectedOrder: null,
+      isAIGuideModalShow: false,
+      aiGuideContent: "",
+      isAILoading: false,
+      currentAIGuideOrderId: null
     };
   },
   computed: {
@@ -57,7 +61,6 @@ const _sfc_main = {
       common_vendor.index.showModal({
         title: "Cancel Order",
         content: "Are you sure?",
-        // 修改点：左边 Yes (绿色)，右边 No
         cancelText: "Yes",
         cancelColor: "#28a745",
         confirmText: "No",
@@ -109,6 +112,33 @@ const _sfc_main = {
           this.isReviewModalShow = false;
         }
       });
+    },
+    openAIGuideModal(orderId) {
+      this.currentAIGuideOrderId = orderId;
+      this.aiGuideContent = "";
+      this.isAILoading = false;
+      this.isAIGuideModalShow = true;
+    },
+    generateAIGuide() {
+      if (!this.currentAIGuideOrderId || this.isAILoading)
+        return;
+      this.isAILoading = true;
+      common_vendor.index.request({
+        url: `http://localhost:8089/api/orders/${this.currentAIGuideOrderId}/ai-guide`,
+        method: "GET",
+        success: (res) => {
+          this.isAILoading = false;
+          if (res.statusCode === 200) {
+            this.aiGuideContent = res.data;
+          } else {
+            this.aiGuideContent = "Failed to generate guide.";
+          }
+        },
+        fail: () => {
+          this.isAILoading = false;
+          this.aiGuideContent = "Network error.";
+        }
+      });
     }
   }
 };
@@ -144,9 +174,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       } : {}, {
         l: order.status === "COMPLETED"
       }, order.status === "COMPLETED" ? {
-        m: common_vendor.o(($event) => $options.openReviewModal(order), index)
+        m: common_vendor.o(($event) => $options.openAIGuideModal(order.id), index),
+        n: common_vendor.o(($event) => $options.openReviewModal(order), index)
       } : {}, {
-        n: index
+        o: index
       });
     })
   } : {
@@ -155,14 +186,34 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     f: $data.isReviewModalShow
   }, $data.isReviewModalShow ? {
     g: $data.reviewContent,
-    h: common_vendor.o(($event) => $data.reviewContent = $event.detail.value, "d8"),
-    i: common_vendor.o(($event) => $data.isReviewModalShow = false, "75"),
-    j: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args), "fe"),
+    h: common_vendor.o(($event) => $data.reviewContent = $event.detail.value, "94"),
+    i: common_vendor.o(($event) => $data.isReviewModalShow = false, "9b"),
+    j: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args), "a5"),
     k: common_vendor.o(() => {
-    }, "f5"),
-    l: common_vendor.o(($event) => $data.isReviewModalShow = false, "6a")
+    }, "d2"),
+    l: common_vendor.o(($event) => $data.isReviewModalShow = false, "85")
   } : {}, {
-    m: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
+    m: $data.isAIGuideModalShow
+  }, $data.isAIGuideModalShow ? common_vendor.e({
+    n: $data.isAILoading || $data.aiGuideContent
+  }, $data.isAILoading || $data.aiGuideContent ? common_vendor.e({
+    o: $data.isAILoading
+  }, $data.isAILoading ? {} : {
+    p: common_vendor.t($data.aiGuideContent)
+  }) : {}, {
+    q: !$data.aiGuideContent
+  }, !$data.aiGuideContent ? {
+    r: common_vendor.o((...args) => $options.generateAIGuide && $options.generateAIGuide(...args), "38"),
+    s: $data.isAILoading,
+    t: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "c4")
+  } : {
+    v: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "7f")
+  }, {
+    w: common_vendor.o(() => {
+    }, "30"),
+    x: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "12")
+  }) : {}, {
+    y: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
