@@ -55,23 +55,19 @@ const _sfc_main = {
       return "tag-cancelled";
     },
     formatTime(order) {
-      return order.createTime ? order.createTime.replace("T", " ").substring(0, 16) : "2026-03-11 14:00";
+      return order.createTime ? order.createTime.replace("T", " ").substring(0, 16) : "N/A";
     },
     handleCancel(orderId) {
       common_vendor.index.showModal({
         title: "Cancel Order",
-        content: "Are you sure?",
-        cancelText: "Yes",
-        cancelColor: "#28a745",
-        confirmText: "No",
-        confirmColor: "#000000",
+        content: "Are you sure you want to cancel?",
         success: (res) => {
-          if (res.cancel) {
+          if (res.confirm) {
             common_vendor.index.request({
               url: `http://localhost:8089/api/orders/${orderId}/cancel`,
               method: "POST",
               success: () => {
-                common_vendor.index.showToast({ title: "Order Cancelled", icon: "none" });
+                common_vendor.index.showToast({ title: "Cancelled" });
                 this.fetchOrders();
               }
             });
@@ -159,25 +155,27 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $options.filteredOrderList.length > 0 ? {
     d: common_vendor.f($options.filteredOrderList, (order, index, i0) => {
       return common_vendor.e({
-        a: common_vendor.t(order.hotelName),
+        a: common_vendor.t(order.hotelName || "Unknown Hotel"),
         b: common_vendor.t(order.status),
         c: common_vendor.n($options.getStatusClass(order.status)),
-        d: common_vendor.t(order.roomType),
+        d: common_vendor.t(order.roomType || "Standard Room"),
         e: common_vendor.t(order.totalPrice),
         f: common_vendor.t(order.guestName || "N/A"),
-        g: common_vendor.t(order.guestPhone || "N/A"),
-        h: common_vendor.t($options.formatTime(order)),
-        i: order.status === "PAID"
+        g: common_vendor.t(order.checkInDate),
+        h: common_vendor.t(order.checkOutDate),
+        i: common_vendor.t(order.guestPhone || "N/A"),
+        j: common_vendor.t($options.formatTime(order)),
+        k: order.status === "PAID"
       }, order.status === "PAID" ? {
-        j: common_vendor.o(($event) => $options.handleCancel(order.id), index),
-        k: common_vendor.o(($event) => $options.handleComplete(order.id), index)
+        l: common_vendor.o(($event) => $options.handleCancel(order.id), index),
+        m: common_vendor.o(($event) => $options.handleComplete(order.id), index)
       } : {}, {
-        l: order.status === "COMPLETED"
+        n: order.status === "COMPLETED"
       }, order.status === "COMPLETED" ? {
-        m: common_vendor.o(($event) => $options.openAIGuideModal(order.id), index),
-        n: common_vendor.o(($event) => $options.openReviewModal(order), index)
+        o: common_vendor.o(($event) => $options.openAIGuideModal(order.id), index),
+        p: common_vendor.o(($event) => $options.openReviewModal(order), index)
       } : {}, {
-        o: index
+        q: index
       });
     })
   } : {
@@ -186,12 +184,12 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     f: $data.isReviewModalShow
   }, $data.isReviewModalShow ? {
     g: $data.reviewContent,
-    h: common_vendor.o(($event) => $data.reviewContent = $event.detail.value, "94"),
-    i: common_vendor.o(($event) => $data.isReviewModalShow = false, "9b"),
-    j: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args), "a5"),
+    h: common_vendor.o(($event) => $data.reviewContent = $event.detail.value, "93"),
+    i: common_vendor.o(($event) => $data.isReviewModalShow = false, "1f"),
+    j: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args), "9b"),
     k: common_vendor.o(() => {
-    }, "d2"),
-    l: common_vendor.o(($event) => $data.isReviewModalShow = false, "85")
+    }, "43"),
+    l: common_vendor.o(($event) => $data.isReviewModalShow = false, "f2")
   } : {}, {
     m: $data.isAIGuideModalShow
   }, $data.isAIGuideModalShow ? common_vendor.e({
@@ -203,15 +201,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }) : {}, {
     q: !$data.aiGuideContent
   }, !$data.aiGuideContent ? {
-    r: common_vendor.o((...args) => $options.generateAIGuide && $options.generateAIGuide(...args), "38"),
+    r: common_vendor.o((...args) => $options.generateAIGuide && $options.generateAIGuide(...args), "33"),
     s: $data.isAILoading,
-    t: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "c4")
+    t: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "1c")
   } : {
-    v: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "7f")
+    v: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "a1")
   }, {
     w: common_vendor.o(() => {
-    }, "30"),
-    x: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "12")
+    }, "37"),
+    x: common_vendor.o(($event) => $data.isAIGuideModalShow = false, "25")
   }) : {}, {
     y: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });

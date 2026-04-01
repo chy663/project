@@ -12,6 +12,9 @@ const _sfc_main = {
       isBookModalShow: false,
       guestName: "",
       guestPhone: "",
+      startDate: "",
+      endDate: "",
+      today: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
       reviews: [],
       currentUserId: 1
     };
@@ -19,6 +22,8 @@ const _sfc_main = {
   onLoad(options) {
     this.roomId = options.id;
     this.hotelId = options.hotelId;
+    this.startDate = options.startDate || this.today;
+    this.endDate = options.endDate || "";
     const userInfo = common_vendor.index.getStorageSync("userInfo");
     if (userInfo && userInfo.id) {
       this.currentUserId = userInfo.id;
@@ -34,10 +39,25 @@ const _sfc_main = {
     common_vendor.index.$off("onGuestSelect");
   },
   methods: {
+    onStartDateChange(e) {
+      this.startDate = e.detail.value;
+      if (this.endDate && this.endDate <= this.startDate) {
+        this.endDate = "";
+      }
+      this.fetchRoomDetail();
+    },
+    onEndDateChange(e) {
+      this.endDate = e.detail.value;
+      this.fetchRoomDetail();
+    },
     fetchRoomDetail() {
       common_vendor.index.request({
         url: `http://localhost:8089/api/rooms/hotel/${this.hotelId}`,
         method: "GET",
+        data: {
+          startDate: this.startDate,
+          endDate: this.endDate
+        },
         success: (res) => {
           const currentRoom = res.data.find((item) => item.id == this.roomId);
           if (currentRoom) {
@@ -77,7 +97,7 @@ const _sfc_main = {
       else if (rt.includes("Velvet"))
         mainImg = "/static/3-22.jpg";
       else if (rt.includes("One"))
-        mainImg = "/static/4-22jpg";
+        mainImg = "/static/4-22.jpg";
       else if (rt.includes("Studio"))
         mainImg = "/static/4-11.jpg";
       else if (rt.includes("4"))
@@ -95,20 +115,24 @@ const _sfc_main = {
       });
     },
     handleConfirmBook() {
-      if (!this.guestName || !this.guestPhone) {
+      if (!this.guestName || !this.guestPhone || !this.startDate || !this.endDate) {
         common_vendor.index.showToast({ title: "Please complete info", icon: "none" });
         return;
       }
       common_vendor.index.showLoading({ title: "Processing..." });
       common_vendor.index.request({
-        url: "http://localhost:8089/api/orders/book",
+        url: "http://localhost:8089/api/orders",
         method: "POST",
         data: {
           userId: this.currentUserId,
           roomId: this.roomInfo.id,
+          hotelId: this.hotelId,
           status: "PAID",
           guestName: this.guestName,
-          guestPhone: this.guestPhone
+          guestPhone: this.guestPhone,
+          checkInDate: this.startDate,
+          checkOutDate: this.endDate,
+          totalPrice: this.roomInfo.price
         },
         success: (orderRes) => {
           common_vendor.index.hideLoading();
@@ -118,6 +142,8 @@ const _sfc_main = {
             setTimeout(() => {
               common_vendor.index.switchTab({ url: "/pages/order/order" });
             }, 1500);
+          } else {
+            common_vendor.index.showToast({ title: "Room inventory is full for the selected dates", icon: "none", duration: 2500 });
           }
         }
       });
@@ -138,14 +164,12 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $data.roomInfo.maxPeople ? {
     e: common_vendor.t($data.roomInfo.maxPeople)
   } : {}, {
-    f: common_vendor.t($data.roomInfo.totalInventory || 0),
-    g: common_vendor.n($data.roomInfo.totalInventory > 0 ? "stock-green" : "stock-red"),
-    h: common_vendor.t($data.roomInfo.roomType),
-    i: common_vendor.t($data.roomInfo.maxPeople),
-    j: common_vendor.t($data.reviews.length),
-    k: $data.reviews.length > 0
+    f: common_vendor.t($data.roomInfo.roomType),
+    g: common_vendor.t($data.roomInfo.maxPeople),
+    h: common_vendor.t($data.reviews.length),
+    i: $data.reviews.length > 0
   }, $data.reviews.length > 0 ? {
-    l: common_vendor.f($data.reviews, (rev, index, i0) => {
+    j: common_vendor.f($data.reviews, (rev, index, i0) => {
       return {
         a: common_vendor.t(rev.userId || "001"),
         b: common_vendor.t($options.formatReviewDate(rev.createTime)),
@@ -154,24 +178,29 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     })
   } : {}, {
-    m: common_vendor.t($data.roomInfo.totalInventory > 0 ? "Book Now" : "Full"),
-    n: $data.roomInfo.totalInventory <= 0 ? 1 : "",
-    o: $data.roomInfo.totalInventory <= 0,
-    p: common_vendor.o((...args) => $options.openBookModal && $options.openBookModal(...args), "0e"),
-    q: $data.isBookModalShow
+    k: common_vendor.o((...args) => $options.openBookModal && $options.openBookModal(...args), "16"),
+    l: $data.isBookModalShow
   }, $data.isBookModalShow ? {
-    r: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args), "39"),
-    s: $data.guestName,
-    t: common_vendor.o(($event) => $data.guestName = $event.detail.value, "18"),
-    v: $data.guestPhone,
-    w: common_vendor.o(($event) => $data.guestPhone = $event.detail.value, "50"),
-    x: common_vendor.o(($event) => $data.isBookModalShow = false, "5f"),
-    y: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args), "38"),
-    z: common_vendor.o(() => {
-    }, "ea"),
-    A: common_vendor.o(($event) => $data.isBookModalShow = false, "85")
+    m: common_vendor.o((...args) => $options.goToSelectGuest && $options.goToSelectGuest(...args), "e3"),
+    n: $data.guestName,
+    o: common_vendor.o(($event) => $data.guestName = $event.detail.value, "ea"),
+    p: $data.guestPhone,
+    q: common_vendor.o(($event) => $data.guestPhone = $event.detail.value, "74"),
+    r: common_vendor.t($data.startDate || "Select Date"),
+    s: $data.startDate,
+    t: $data.today,
+    v: common_vendor.o((...args) => $options.onStartDateChange && $options.onStartDateChange(...args), "3c"),
+    w: common_vendor.t($data.endDate || "Select Date"),
+    x: $data.endDate,
+    y: $data.startDate || $data.today,
+    z: common_vendor.o((...args) => $options.onEndDateChange && $options.onEndDateChange(...args), "39"),
+    A: common_vendor.o(($event) => $data.isBookModalShow = false, "3d"),
+    B: common_vendor.o((...args) => $options.handleConfirmBook && $options.handleConfirmBook(...args), "14"),
+    C: common_vendor.o(() => {
+    }, "b9"),
+    D: common_vendor.o(($event) => $data.isBookModalShow = false, "ca")
   } : {}, {
-    B: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
+    E: common_vendor.n(_ctx.isDark ? "dark-mode" : "")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

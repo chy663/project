@@ -17,9 +17,6 @@
 			
 			<view class="tag-row mb-20">
 				<text class="tag-outline" v-if="roomInfo.maxPeople">Max {{ roomInfo.maxPeople }} People</text>
-				<text class="tag-outline" :class="roomInfo.totalInventory > 0 ? 'stock-green' : 'stock-red'">
-					Stock: {{ roomInfo.totalInventory || 0 }}
-				</text>
 			</view>
 
 			<view class="facility-row">
@@ -53,14 +50,7 @@
 		</view>
 
 		<view class="bottom-bar">
-			<button 
-				class="book-now" 
-				:class="{'disabled-btn': roomInfo.totalInventory <= 0}"
-				:disabled="roomInfo.totalInventory <= 0"
-				@tap="openBookModal"
-			>
-				{{ roomInfo.totalInventory > 0 ? 'Book Now' : 'Full' }}
-			</button>
+			<button class="book-now" @tap="openBookModal">Book Now</button>
 		</view>
 
 		<view v-if="isBookModalShow" class="modal-mask" @tap="isBookModalShow = false">
@@ -78,6 +68,18 @@
 						<text class="label">Phone</text>
 						<input class="uni-input" type="number" v-model="guestPhone" placeholder="Phone Number" />
 					</view>
+					<view class="input-row">
+						<text class="label">Check-in</text>
+						<picker mode="date" :value="startDate" :start="today" @change="onStartDateChange">
+							<view class="uni-input">{{ startDate || 'Select Date' }}</view>
+						</picker>
+					</view>
+					<view class="input-row">
+						<text class="label">Check-out</text>
+						<picker mode="date" :value="endDate" :start="startDate || today" @change="onEndDateChange">
+							<view class="uni-input">{{ endDate || 'Select Date' }}</view>
+						</picker>
+					</view>
 				</view>
 				<view class="modal-btns">
 					<button class="cancel-btn" @tap="isBookModalShow = false">Cancel</button>
@@ -89,7 +91,6 @@
 </template>
 
 <script>
-// 仅在此处引入并注册了 Mixin
 import { themeMixin } from '@/mixins/theme.js';
 
 export default {
@@ -103,6 +104,9 @@ export default {
 			isBookModalShow: false,
 			guestName: '',
 			guestPhone: '',
+			startDate: '',
+			endDate: '',
+			today: new Date().toISOString().split('T')[0],
 			reviews: [],
 			currentUserId: 1
 		}
@@ -110,6 +114,8 @@ export default {
 	onLoad(options) {
 		this.roomId = options.id;
 		this.hotelId = options.hotelId;
+		this.startDate = options.startDate || this.today;
+		this.endDate = options.endDate || '';
 		
 		const userInfo = uni.getStorageSync('userInfo');
 		if (userInfo && userInfo.id) {
@@ -128,10 +134,25 @@ export default {
 		uni.$off('onGuestSelect');
 	},
 	methods: {
+		onStartDateChange(e) {
+			this.startDate = e.detail.value;
+			if (this.endDate && this.endDate <= this.startDate) {
+				this.endDate = '';
+			}
+			this.fetchRoomDetail();
+		},
+		onEndDateChange(e) {
+			this.endDate = e.detail.value;
+			this.fetchRoomDetail();
+		},
 		fetchRoomDetail() {
 			uni.request({
 				url: `http://localhost:8089/api/rooms/hotel/${this.hotelId}`,
 				method: 'GET',
+				data: {
+					startDate: this.startDate,
+					endDate: this.endDate
+				},
 				success: (res) => {
 					const currentRoom = res.data.find(item => item.id == this.roomId);
 					if (currentRoom) {
@@ -163,7 +184,7 @@ export default {
 			else if (rt.includes('Deluxe')) mainImg = '/static/2-22.jpg';
 			else if (rt.includes('Neon')) mainImg = '/static/3-11.jpg';
 			else if (rt.includes('Velvet')) mainImg = '/static/3-22.jpg';
-			else if (rt.includes('One')) mainImg = '/static/4-22jpg';
+			else if (rt.includes('One')) mainImg = '/static/4-22.jpg';
 			else if (rt.includes('Studio')) mainImg = '/static/4-11.jpg';
 			else if (rt.includes('4')) mainImg = '/static/5-11.jpg';
 			else if (rt.includes('Double')) mainImg = '/static/5-22.jpg';
@@ -176,20 +197,24 @@ export default {
 			});
 		},
 		handleConfirmBook() {
-			if (!this.guestName || !this.guestPhone) {
+			if (!this.guestName || !this.guestPhone || !this.startDate || !this.endDate) {
 				uni.showToast({ title: 'Please complete info', icon: 'none' });
 				return;
 			}
 			uni.showLoading({ title: 'Processing...' });
 			uni.request({
-				url: 'http://localhost:8089/api/orders/book',
+				url: 'http://localhost:8089/api/orders',
 				method: 'POST',
 				data: {
 					userId: this.currentUserId,
 					roomId: this.roomInfo.id,
+					hotelId: this.hotelId,
 					status: 'PAID',
 					guestName: this.guestName,
-					guestPhone: this.guestPhone
+					guestPhone: this.guestPhone,
+					checkInDate: this.startDate,
+					checkOutDate: this.endDate,
+					totalPrice: this.roomInfo.price
 				},
 				success: (orderRes) => {
 					uni.hideLoading();
@@ -197,6 +222,8 @@ export default {
 						uni.showToast({ title: 'Success' });
 						this.isBookModalShow = false;
 						setTimeout(() => { uni.switchTab({ url: '/pages/order/order' }); }, 1500);
+					} else {
+						uni.showToast({ title: 'Room inventory is full for the selected dates', icon: 'none', duration: 2500 });
 					}
 				}
 			});
@@ -206,7 +233,6 @@ export default {
 </script>
 
 <style>
-/* 以下所有原有样式代码完全保持不变 */
 .container { padding-bottom: 140rpx; background-color: #f5f5f5; min-height: 100vh; }
 .room-banner { width: 100%; height: 500rpx; background: #fff; }
 .banner-img { width: 100%; height: 100%; }
@@ -216,8 +242,6 @@ export default {
 .price { color: #000000; font-size: 44rpx; font-weight: bold; }
 .unit { font-size: 24rpx; color: #999; margin-left: 6rpx; }
 .tag-outline { color: #007bff; font-size: 22rpx; padding: 4rpx 16rpx; border-radius: 8rpx; margin-right: 15rpx; border: 1rpx solid #eee; background-color: #e7f1ff; }
-.stock-green { color: #28a745; background: #eafaf1; border-color: #28a745; }
-.stock-red { color: #ff4d4f; background: #fff1f0; border-color: #ff4d4f; }
 .facility-row { display: flex; justify-content: space-between; padding-top: 20rpx; border-top: 1rpx solid #f8f8f8; }
 .facility-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
 .facility-icon { font-size: 36rpx; margin-bottom: 10rpx; }
@@ -239,13 +263,12 @@ export default {
 .modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx; }
 .modal-title { font-size: 34rpx; font-weight: bold; margin-bottom: 30rpx; }
 .input-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #eee; }
-.label { width: 120rpx; font-size: 28rpx; color: #333; }
+.label { width: 140rpx; font-size: 28rpx; color: #333; }
 .uni-input { flex: 1; font-size: 28rpx; }
 .modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx; }
 .cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx; }
 .confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx; }
 
-/* 仅在下方新增夜间模式适配代码，不影响上方原有排版 */
 .dark-mode { background-color: #1a1a1a !important; }
 .dark-mode .info-section, 
 .dark-mode .section, 

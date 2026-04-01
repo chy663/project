@@ -4,9 +4,11 @@ import com.Stephen.hotel_booking.entity.Hotel;
 import com.Stephen.hotel_booking.repository.HotelRepository;
 import com.Stephen.hotel_booking.service.HotelService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -31,10 +33,27 @@ public class HotelController {
         return hotelService.searchByAiTags(query);
     }
 
+    /**
+     * 获取酒店列表
+     * 如果提供了 startDate 和 endDate，则只返回在该时间段内有库存的酒店
+     */
     @GetMapping
-    public List<Hotel> getAllHotels() {
-        // 调用 Service 层带价格处理的方法
-        return hotelService.getAllHotels();
+    public List<Hotel> getAllHotels(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        List<Hotel> hotels;
+
+        if (startDate != null && endDate != null) {
+            // 核心逻辑：只获取在选定时间内至少有一个房间每天都有库存的酒店
+            hotels = hotelRepository.findAvailableHotels(startDate, endDate);
+        } else {
+            // 默认逻辑：获取所有酒店
+            hotels = hotelRepository.findAll();
+        }
+
+        // 统一调用 Service 层处理动态价格区间显示逻辑
+        return hotelService.processPriceRanges(hotels);
     }
 
     @GetMapping("/{id}")

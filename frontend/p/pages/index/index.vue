@@ -21,6 +21,16 @@
 				</view>
 			</picker>
 
+			<view class="filter-item date-range-item">
+				<picker mode="date" :value="startDate" :start="today" @change="onStartDateChange">
+					<view class="date-text">{{ startDate || 'Check-in' }}</view>
+				</picker>
+				<text class="date-sep">-</text>
+				<picker mode="date" :value="endDate" :start="startDate || today" @change="onEndDateChange">
+					<view class="date-text">{{ endDate || 'Check-out' }}</view>
+				</picker>
+			</view>
+
 			<view class="filter-item location-wrapper">
 				<picker 
 					@change="onLocationChange" 
@@ -105,13 +115,14 @@ import { themeMixin } from '@/mixins/theme.js';
 export default {
 	mixins: [themeMixin],
 	data() {
+		const now = new Date();
+		const todayStr = now.toISOString().split('T')[0];
 		return {
 			hotelList: [],
 			filteredHotelList: [],
 			searchKeyword: '',
 			sortOptions: ['Default', 'Price: Low to High', 'Price: High to Low', 'Star: High to Low', 'Star: Low to High'],
 			sortDisplayOptions: ['Default', 'Price ↑', 'Price ↓', 'Star ↓', 'Star ↑'],
-			// Key Change: Map display labels to actual database values
 			locationOptions: [
 				{ label: 'All Regions', value: '' },
 				{ label: 'Center Financial Place', value: 'Beijing CBD' },
@@ -122,10 +133,13 @@ export default {
 			],
 			sortIndex: 0, 
 			locationIndex: 0,
-			selectedLocationValue: '', // Store the mapping value here
+			selectedLocationValue: '', 
 			isRoomPickerShow: false,
 			personCount: 1,
-			roomInfoText: ''
+			roomInfoText: '',
+			today: todayStr,
+			startDate: todayStr,
+			endDate: ''
 		}
 	},
 	onShow() {
@@ -137,16 +151,27 @@ export default {
 			if (!userInfo || !userInfo.username) {
 				uni.reLaunch({ url: '/pages/login/login' });
 			} else {
-				if (this.hotelList.length === 0) {
-					this.fetchHotelData();
-				}
+				// 每次进入页面重新获取数据，确保库存隐藏逻辑实时更新
+				this.fetchHotelData();
 			}
 		},
 		fetchHotelData() {
+			// 如果有搜索词，走 AI 搜索逻辑
+			let apiUrl = 'http://localhost:8089/api/hotels';
+			let requestData = {
+				startDate: this.startDate,
+				endDate: this.endDate
+			};
+
+			if (this.searchKeyword) {
+				apiUrl = 'http://localhost:8089/api/hotels/ai-search';
+				requestData.query = this.searchKeyword;
+			}
+
 			uni.request({
-				url: 'http://localhost:8089/api/hotels/ai-search',
+				url: apiUrl,
 				method: 'GET',
-				data: { query: '' }, 
+				data: requestData, 
 				success: (res) => {
 					if (res.statusCode === 200 && Array.isArray(res.data)) {
 						this.hotelList = res.data;
@@ -159,37 +184,22 @@ export default {
 			});
 		},
 		handleAiSearch() {
-			const query = this.searchKeyword.trim();
-			if (!query) {
-				this.fetchHotelData();
-				return;
+			this.fetchHotelData();
+		},
+		onStartDateChange(e) {
+			this.startDate = e.detail.value;
+			if (this.endDate && this.startDate >= this.endDate) {
+				this.endDate = '';
 			}
-			uni.showLoading({ title: 'AI Searching...' });
-			uni.request({
-				url: 'http://localhost:8089/api/hotels/ai-search',
-				method: 'GET',
-				data: { query: query },
-				success: (res) => {
-					if (res.statusCode === 200 && Array.isArray(res.data)) {
-						this.hotelList = res.data;
-						this.applyFilters();
-						if (this.hotelList.length === 0) {
-							uni.showToast({ title: 'Not Found', icon: 'none' });
-						}
-					}
-				},
-				fail: (err) => {
-					uni.showToast({ title: 'Network Error', icon: 'none' });
-				},
-				complete: () => {
-					uni.hideLoading();
-				}
-			});
+			this.fetchHotelData();
+		},
+		onEndDateChange(e) {
+			this.endDate = e.detail.value;
+			this.fetchHotelData();
 		},
 		applyFilters() {
 			let list = Array.isArray(this.hotelList) ? [...this.hotelList] : [];
 			
-			// Use the hidden value for filtering
 			if (this.selectedLocationValue) {
 				list = list.filter(h => h.address && h.address.includes(this.selectedLocationValue));
 			}
@@ -200,33 +210,27 @@ export default {
 			this.filteredHotelList = this.applySort(list);
 		},
 		applySort(list) {
-		    const index = this.sortIndex;
-		    let sortedList = [...list];
-		    // 根据解析出的最小价格进行排序
-		    if (index === 0) sortedList.sort((a, b) => a.id - b.id);
-		    else if (index === 1) sortedList.sort((a, b) => this.getMinPrice(a.price) - this.getMinPrice(b.price));
-		    else if (index === 2) sortedList.sort((a, b) => this.getMinPrice(b.price) - this.getMinPrice(a.price));
-		    else if (index === 3) sortedList.sort((a, b) => b.starRating - a.starRating);
-		    else if (index === 4) sortedList.sort((a, b) => a.starRating - b.starRating);
-		    return sortedList;
+			const index = this.sortIndex;
+			let sortedList = [...list];
+			if (index === 0) sortedList.sort((a, b) => a.id - b.id);
+			else if (index === 1) sortedList.sort((a, b) => this.getMinPrice(a.price) - this.getMinPrice(b.price));
+			else if (index === 2) sortedList.sort((a, b) => this.getMinPrice(b.price) - this.getMinPrice(a.price));
+			else if (index === 3) sortedList.sort((a, b) => b.starRating - a.starRating);
+			else if (index === 4) sortedList.sort((a, b) => a.starRating - b.starRating);
+			return sortedList;
 		},
-		
 		getMinPrice(priceStr) {
-		    if (typeof priceStr === 'number') return priceStr;
-		    if (!priceStr || priceStr === 'N/A') return 0;
-		    
-		    // 提取字符串中的第一个数字作为排序基准（例如 "100 - 200" 提取 100）
-		    const match = String(priceStr).match(/\d+/);
-		    return match ? parseFloat(match[0]) : 0;
+			if (typeof priceStr === 'number') return priceStr;
+			if (!priceStr || priceStr === 'N/A') return 0;
+			const match = String(priceStr).match(/\d+/);
+			return match ? parseFloat(match[0]) : 0;
 		},
-		
 		onSortChange(e) {
 			this.sortIndex = parseInt(e.detail.value);
 			this.applyFilters();
 		},
 		onLocationChange(e) {
 			this.locationIndex = parseInt(e.detail.value);
-			// Update the internal value using the selected index
 			this.selectedLocationValue = this.locationOptions[this.locationIndex].value;
 			this.applyFilters();
 		},
@@ -237,14 +241,13 @@ export default {
 			this.applyFilters();
 		},
 		handleGetLocation() {
-			// Find the index for Street 1 and set its value
 			this.locationIndex = 1; 
 			this.selectedLocationValue = this.locationOptions[1].value;
 			this.applyFilters();
 			uni.showToast({ title: `Located: ${this.locationOptions[1].label}`, icon: 'none' });
 		},
 		goToDetail(hotelId) {
-			uni.navigateTo({ url: `/pages/detail/detail?id=${hotelId}` });
+			uni.navigateTo({ url: `/pages/detail/detail?id=${hotelId}&startDate=${this.startDate}&endDate=${this.endDate}` });
 		},
 		getHotelImages(hotel) {
 			const name = hotel.name || '';
@@ -260,7 +263,7 @@ export default {
 </script>
 
 <style>
-/* Style omitted for brevity as requested - it remains the same */
+/* 样式部分保持不变 */
 .container { padding: 20rpx; background-color: #f8f8f8; min-height: 100vh; }
 .search-box { display: flex; align-items: center; background-color: #fff; padding: 10rpx 25rpx; border-radius: 40rpx; margin-bottom: 20rpx; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); }
 .search-input { flex: 1; margin-left: 15rpx; font-size: 28rpx; height: 70rpx; }
@@ -268,6 +271,9 @@ export default {
 .filter-bar { display: flex; justify-content: space-between; background-color: #fff; padding: 25rpx 10rpx; border-radius: 12rpx; margin-bottom: 30rpx; align-items: center; }
 .filter-item { flex: 1; text-align: center; border-right: 1rpx solid #eee; height: 60rpx; display: flex; align-items: center; justify-content: center; }
 .filter-item:last-child { border-right: none; }
+.date-range-item { flex: 1.5; display: flex; align-items: center; justify-content: center; font-size: 24rpx; }
+.date-text { color: #007aff; font-weight: bold; }
+.date-sep { margin: 0 4rpx; color: #999; }
 .picker-text { font-size: 28rpx; color: #000; font-weight: bold; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
 .active-text { font-weight: 1000 !important; color: #000 !important; }
 .arrow { font-size: 20rpx; margin-left: 6rpx; color: #000; font-weight: bold; }

@@ -16,7 +16,7 @@
 		<view v-if="filteredOrderList.length > 0" class="order-list">
 			<view v-for="(order, index) in filteredOrderList" :key="index" class="order-card">
 				<view class="order-header">
-					<text class="hotel-name">{{ order.hotelName }}</text>
+					<text class="hotel-name">{{ order.hotelName || 'Unknown Hotel' }}</text>
 					<view class="status-tag" :class="getStatusClass(order.status)">
 						{{ order.status }}
 					</view>
@@ -24,17 +24,21 @@
 
 				<view class="order-body">
 					<view class="room-info">
-						<text class="room-type">{{ order.roomType }}</text>
+						<text class="room-type">{{ order.roomType || 'Standard Room' }}</text>
 						<text class="order-price">${{ order.totalPrice }}</text>
 					</view>
 					
 					<view class="guest-details-box">
 						<view class="info-line">
-							<text class="info-label">Guest Name:</text>
+							<text class="info-label">Guest:</text>
 							<text class="info-value">{{ order.guestName || 'N/A' }}</text>
 						</view>
 						<view class="info-line">
-							<text class="info-label">Phone Num:</text>
+							<text class="info-label">Stay:</text>
+							<text class="info-value">{{ order.checkInDate }} to {{ order.checkOutDate }}</text>
+						</view>
+						<view class="info-line">
+							<text class="info-label">Phone:</text>
 							<text class="info-value">{{ order.guestPhone || 'N/A' }}</text>
 						</view>
 					</view>
@@ -88,11 +92,11 @@
 				</scroll-view>
 				
 				<view v-else class="ai-prompt">
-					<text>Ready to explore? Click Generate/View to create or see your custom travel guide for your stay.</text>
+					<text>Ready to explore? Click Generate to create your custom travel guide for your stay.</text>
 				</view>
 
 				<view class="modal-btns" v-if="!aiGuideContent">
-					<button class="confirm-btn ai-generate-btn" @tap="generateAIGuide" :disabled="isAILoading">Generate/View</button>
+					<button class="confirm-btn ai-generate-btn" @tap="generateAIGuide" :disabled="isAILoading">Generate</button>
 					<button class="cancel-btn" @tap="isAIGuideModalShow = false">Cancel</button>
 				</view>
 				<view class="modal-btns single-btn" v-else>
@@ -143,7 +147,7 @@ export default {
 	methods: {
 		fetchOrders() {
 			uni.request({
-				url:`http://localhost:8089/api/orders/user/${this.userId}`,
+				url: `http://localhost:8089/api/orders/user/${this.userId}`,
 				method: 'GET',
 				success: (res) => {
 					this.orderList = res.data.reverse();
@@ -159,23 +163,19 @@ export default {
 			return 'tag-cancelled';
 		},
 		formatTime(order) {
-			return order.createTime ? order.createTime.replace('T', ' ').substring(0, 16) : '2026-03-11 14:00';
+			return order.createTime ? order.createTime.replace('T', ' ').substring(0, 16) : 'N/A';
 		},
 		handleCancel(orderId) {
 			uni.showModal({
 				title: 'Cancel Order', 
-				content: 'Are you sure?',
-				cancelText: 'Yes',
-				cancelColor: '#28a745', 
-				confirmText: 'No',
-				confirmColor: '#000000',
+				content: 'Are you sure you want to cancel?',
 				success: (res) => {
-					if (res.cancel) {
+					if (res.confirm) {
 						uni.request({
 							url: `http://localhost:8089/api/orders/${orderId}/cancel`,
 							method: 'POST',
 							success: () => { 
-								uni.showToast({ title: 'Order Cancelled', icon: 'none' });
+								uni.showToast({ title: 'Cancelled' });
 								this.fetchOrders(); 
 							}
 						});
@@ -217,7 +217,6 @@ export default {
 				}
 			});
 		},
-		
 		openAIGuideModal(orderId) {
 			this.currentAIGuideOrderId = orderId;
 			this.aiGuideContent = '';
@@ -226,7 +225,6 @@ export default {
 		},
 		generateAIGuide() {
 			if (!this.currentAIGuideOrderId || this.isAILoading) return;
-			
 			this.isAILoading = true;
 			uni.request({
 				url: `http://localhost:8089/api/orders/${this.currentAIGuideOrderId}/ai-guide`,
@@ -250,6 +248,7 @@ export default {
 </script>
 
 <style>
+/* 保持原有样式并确保新字段布局美观 */
 .container { padding-top: 100rpx; background-color: #f8f8f8; min-height: 100vh; display: flex; flex-direction: column; }
 .tabs-bar { position: fixed; top: 0; left: 0; right: 0; height: 90rpx; background: #fff; display: flex; justify-content: space-around; align-items: center; z-index: 99; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05); }
 .tab-item { font-size: 28rpx; color: #666; position: relative; height: 100%; display: flex; align-items: center; transition: all 0.3s; }
@@ -270,15 +269,17 @@ export default {
 .tag-paid { color: #28a745; background-color: #eafaf1; }
 .tag-completed { color: #007bff; background-color: #e7f1ff; }
 .tag-cancelled { color: #ff4d4f; background-color: #fff1f0; }
+
 .order-body { margin-bottom: 20rpx; }
 .room-info { display: flex; justify-content: space-between; margin-bottom: 20rpx; }
 .room-type { font-size: 32rpx; color: #333; font-weight: 500; }
 .order-price { font-size: 32rpx; color: #000000; font-weight: bold; }
 .guest-details-box { background: #f9f9f9; padding: 20rpx; border-radius: 12rpx; margin-bottom: 16rpx; }
 .info-line { display: flex; margin-bottom: 10rpx; font-size: 26rpx; }
-.info-label { color: #999; width: 160rpx; }
+.info-label { color: #999; width: 140rpx; }
 .info-value { color: #333; font-weight: 500; }
 .order-time { font-size: 22rpx; color: #bbb; }
+
 .order-footer { display: flex; justify-content: flex-end; border-top: 1rpx solid #f0f0f0; padding-top: 24rpx; }
 .action-btn { font-size: 24rpx; margin-left: 20rpx; padding: 0 30rpx; height: 60rpx; line-height: 60rpx; border-radius: 30rpx; border: none; }
 .cancel { background: #fff1f0; color: #ff4d4f; border: 1rpx solid #ddd; }
@@ -288,30 +289,26 @@ export default {
 
 .empty-state { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 200rpx; color: #999; font-size: 28rpx; }
 
+/* 弹窗样式 */
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center; }
 .modal-content { background: #fff; width: 85%; padding: 40rpx; border-radius: 30rpx; }
 .modal-title { font-size: 34rpx; font-weight: bold; text-align: center; margin-bottom: 30rpx; }
 .review-textarea { width: 100%; height: 200rpx; background: #f5f5f5; border-radius: 12rpx; padding: 20rpx; font-size: 28rpx; box-sizing: border-box; }
 .modal-btns { display: flex; justify-content: space-between; margin-top: 40rpx; }
-.single-btn { justify-content: center; }
-.cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx; }
 .confirm-btn { width: 45%; background: #28a745; color: #fff; font-size: 28rpx; border-radius: 40rpx; }
-.ai-generate-btn { background: #9c27b0 !important; color: #fff !important; }
-
-.ai-modal { width: 90%; max-height: 80vh; display: flex; flex-direction: column; }
-.ai-prompt { padding: 40rpx 20rpx; text-align: center; color: #666; font-size: 28rpx; line-height: 1.5; }
-.ai-content-scroll { max-height: 50vh; margin-bottom: 20rpx; padding: 20rpx; background: #f9f9f9; border-radius: 12rpx; }
+.cancel-btn { width: 45%; background: #f5f5f5; color: #666; font-size: 28rpx; border-radius: 40rpx; }
+.ai-generate-btn { background: #9c27b0 !important; color: #fff !important; flex: 1; margin: 0 10rpx; }
+.ai-modal { width: 90%; max-height: 80vh; }
+.ai-content-scroll { max-height: 50vh; padding: 20rpx; background: #f9f9f9; border-radius: 12rpx; }
 .ai-text { font-size: 28rpx; color: #333; line-height: 1.6; white-space: pre-wrap; }
-.loading-text { font-size: 28rpx; color: #9c27b0; text-align: center; display: block; margin-top: 40rpx; }
 
+/* 深色模式样式适配 */
 .dark-mode { background-color: #1a1a1a !important; }
 .dark-mode .tabs-bar, .dark-mode .order-card, .dark-mode .modal-content { background-color: #2c2c2c !important; box-shadow: none !important; }
-.dark-mode .tab-item { color: #888 !important; }
 .dark-mode .hotel-name, .dark-mode .room-type, .dark-mode .order-price, .dark-mode .modal-title, .dark-mode .ai-text { color: #e0e0e0 !important; }
 .dark-mode .guest-details-box, .dark-mode .review-textarea, .dark-mode .ai-content-scroll { background-color: #333 !important; }
-.dark-mode .info-value, .dark-mode .review-textarea { color: #bbb !important; }
-.dark-mode .order-header, .dark-mode .order-footer { border-bottom-color: #3d3d3d !important; border-top-color: #3d3d3d !important; }
+.dark-mode .info-value { color: #bbb !important; }
+.dark-mode .order-header, .dark-mode .order-footer { border-color: #3d3d3d !important; }
 .dark-mode .cancel-btn { background-color: #3d3d3d !important; color: #999 !important; }
-.dark-mode .empty-state, .dark-mode .ai-prompt { color: #aaa; }
 .dark-mode .ai-btn { background: #3d2b45 !important; color: #ce93d8 !important; }
 </style>

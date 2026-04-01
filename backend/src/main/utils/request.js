@@ -1,5 +1,5 @@
 // utils/request.js
-const BASE_URL = 'http://localhost:8089'; // 模拟器环境使用
+const BASE_URL = 'http://10.225.252.216:8089'; // 模拟器环境使用
 
 export const request = (options) => {
     return new Promise((resolve, reject) => {

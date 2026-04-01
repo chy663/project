@@ -1,136 +1,123 @@
 package com.Stephen.hotel_booking.controller;
 
 import com.Stephen.hotel_booking.entity.Order;
-import com.Stephen.hotel_booking.entity.Room;
-import com.Stephen.hotel_booking.entity.Hotel;
+import com.Stephen.hotel_booking.entity.RoomInventory;
 import com.Stephen.hotel_booking.repository.OrderRepository;
+import com.Stephen.hotel_booking.repository.RoomInventoryRepository;
 import com.Stephen.hotel_booking.repository.RoomRepository;
-import com.Stephen.hotel_booking.repository.HotelRepository;
-import com.Stephen.hotel_booking.service.DoubaoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*")
+@CrossOrigin
 public class OrderController {
 
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
+    private RoomInventoryRepository roomInventoryRepository;
+
+    @Autowired
     private RoomRepository roomRepository;
 
-    @Autowired
-    private HotelRepository hotelRepository;
-
-    @Autowired
-    private DoubaoService doubaoService;
-
-    @PostMapping("/book")
-    @Transactional
-    public ResponseEntity<?> createOrder(@RequestBody Order bookingRequest) {
-        System.out.println("Booking Request Content: " + bookingRequest.toString());
-
-        Room room = roomRepository.findById(bookingRequest.getRoomId())
-                .orElseThrow(() -> new RuntimeException("Room not found"));
-
-        Hotel hotel = hotelRepository.findById(room.getHotelId())
-                .orElseThrow(() -> new RuntimeException("Hotel not found"));
-
-        int updatedRows = roomRepository.decreaseInventory(room.getId());
-
-        if (updatedRows > 0) {
-            bookingRequest.setHotelId(room.getHotelId());
-            bookingRequest.setHotelName(hotel.getName());
-            bookingRequest.setRoomType(room.getRoomType());
-            bookingRequest.setTotalPrice(room.getPrice());
-            bookingRequest.setStatus("PAID");
-
-            Order savedOrder = orderRepository.save(bookingRequest);
-            return ResponseEntity.ok(savedOrder);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Inadequate inventory");
-        }
-    }
-
-    @PostMapping("/{orderId}/cancel")
-    @Transactional
-    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        if (!"PAID".equals(order.getStatus())) {
-            return ResponseEntity.badRequest().body("Only PAID orders can be cancelled");
-        }
-
-        order.setStatus("CANCELLED");
-        orderRepository.save(order);
-
-        roomRepository.increaseInventory(order.getRoomId());
-
-        return ResponseEntity.ok("Order cancelled successfully");
-    }
-
-    @PostMapping("/{orderId}/complete")
-    @Transactional
-    public ResponseEntity<?> completeOrder(@PathVariable Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        if (!"PAID".equals(order.getStatus())) {
-            return ResponseEntity.badRequest().body("Only PAID orders can be completed");
-        }
-
-        order.setStatus("COMPLETED");
-        order.setCompleteTime(java.time.LocalDateTime.now());
-        orderRepository.save(order);
-
-        return ResponseEntity.ok("Order completed successfully");
-    }
-
     @GetMapping("/user/{userId}")
-    public List<Order> getOrdersByUser(@PathVariable Long userId) {
+    public List<Order> getOrdersByUserId(@PathVariable Long userId) {
         return orderRepository.findByUserId(userId);
     }
 
-    @GetMapping
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    @PostMapping
+    @Transactional
+    public ResponseEntity<?> createOrder(@RequestBody Order order) {
+        if (order.getCheckInDate() == null || order.getCheckOutDate() == null) {
+            return ResponseEntity.badRequest().body("日期不能为空");
+        }
+        if (!order.getCheckInDate().isBefore(order.getCheckOutDate())) {
+            return ResponseEntity.badRequest().body("入住日期必须早于退房日期");
+        }
+
+        LocalDate current = order.getCheckInDate();
+        while (current.isBefore(order.getCheckOutDate())) {
+            Optional<RoomInventory> inventoryOpt = roomInventoryRepository.findByRoomIdAndInventoryDate(order.getRoomId(), current);
+
+            if (inventoryOpt.isEmpty() || inventoryOpt.get().getRemainingInventory() <= 0) {
+                return ResponseEntity.status(400).body(current + " 该日期房间已售罄");
+            }
+
+            RoomInventory inventory = inventoryOpt.get();
+            inventory.setRemainingInventory(inventory.getRemainingInventory() - 1);
+            roomInventoryRepository.save(inventory);
+
+            current = current.plusDays(1);
+        }
+
+        int result = roomRepository.decreaseInventory(order.getRoomId());
+        if (result == 0) {
+            throw new RuntimeException("Room total inventory exhausted");
+        }
+
+        Order savedOrder = orderRepository.save(order);
+        return ResponseEntity.ok(savedOrder);
     }
 
-    @GetMapping("/{orderId}/ai-guide")
+    /**
+     * Cancel order and restore inventory
+     */
+    @PostMapping("/{id}/cancel")
     @Transactional
-    public ResponseEntity<?> generateAiGuide(@PathVariable Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+    public ResponseEntity<?> cancelOrder(@PathVariable Long id) {
+        Order order = orderRepository.findById(id).orElse(null);
 
-        if (!"COMPLETED".equals(order.getStatus())) {
-            return ResponseEntity.badRequest().body("Only COMPLETED orders can generate AI guide");
+        if (order == null) {
+            return ResponseEntity.notFound().build();
         }
 
-        if (order.getAiGuide() != null && !order.getAiGuide().trim().isEmpty()) {
-            return ResponseEntity.ok(order.getAiGuide());
+        // Check if the order is already cancelled or completed
+        if ("CANCELLED".equals(order.getStatus())) {
+            return ResponseEntity.badRequest().body("订单已是取消状态");
         }
 
-        Hotel hotel = hotelRepository.findById(order.getHotelId())
-                .orElseThrow(() -> new RuntimeException("Hotel not found"));
+        // 1. Restore daily inventory in RoomInventory table
+        LocalDate current = order.getCheckInDate();
+        while (current.isBefore(order.getCheckOutDate())) {
+            Optional<RoomInventory> inventoryOpt = roomInventoryRepository.findByRoomIdAndInventoryDate(order.getRoomId(), current);
 
-        String guide = doubaoService.generateTravelGuide(
-                hotel.getAddress(),
-                hotel.getDescription(),
-                order.getRoomType()
-        );
+            if (inventoryOpt.isPresent()) {
+                RoomInventory inventory = inventoryOpt.get();
+                inventory.setRemainingInventory(inventory.getRemainingInventory() + 1);
+                roomInventoryRepository.save(inventory);
+            }
+            // If inventory record doesn't exist for some reason, we skip or handle as needed
 
-        if (!guide.startsWith("Failed") && !guide.startsWith("Error")) {
-            order.setAiGuide(guide);
+            current = current.plusDays(1);
+        }
+
+        // 2. Restore total inventory in Room table
+        roomRepository.increaseInventory(order.getRoomId());
+
+        // 3. Update order status
+        order.setStatus("CANCELLED");
+        orderRepository.save(order);
+
+        return ResponseEntity.ok("订单已取消，库存已返还");
+    }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<?> completeOrder(@PathVariable Long id) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order != null) {
+            order.setStatus("COMPLETED");
+            order.setCompleteTime(java.time.LocalDateTime.now());
             orderRepository.save(order);
+            return ResponseEntity.ok("已办理入住");
         }
-
-        return ResponseEntity.ok(guide);
+        return ResponseEntity.notFound().build();
     }
 }
